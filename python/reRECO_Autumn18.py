@@ -65,7 +65,7 @@ else:
         secondaryFileNames = cms.untracked.vstring()
     )
 
-process.isotrackproducer = cms.EDProducer("Breno_IsoTrackProducer",
+process.isotrackproducer = cms.EDProducer("IsoTrackProducer",
                                     selectedTracks = cms.InputTag("generalTracks"),
                                     selectedElectrons = cms.InputTag("gedGsfElectrons"),
                                     selectedMuons = cms.InputTag("muons"),

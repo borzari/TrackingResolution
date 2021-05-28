@@ -15,6 +15,7 @@
 <use   name="Geometry/RPCGeometry"/>
 <use   name="RecoMuon/GlobalTrackingTools"/>
 <use   name="RecoLocalTracker/SiStripClusterizer" />
-<flags EDM_PLUGIN="1"/>
-<library file="*.cc" name="DQMTrackingMonitorSourcePlugins">
+<flags  CXXFLAGS="-mtune=core2 -march=core2 -O3 -pipe"/>
+<library  file="*.cc"  name="TrackingResolutionPlugins">
+  <flags  EDM_PLUGIN="1"/>
 </library>

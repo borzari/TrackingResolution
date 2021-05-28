@@ -58,10 +58,10 @@
 // class declaration
 //
 
-class Breno_IsoTrackProducer : public edm::global::EDProducer<> {
+class IsoTrackProducer : public edm::global::EDProducer<> {
 public:
-  explicit Breno_IsoTrackProducer(const edm::ParameterSet&);
-   ~Breno_IsoTrackProducer() override;  
+  explicit IsoTrackProducer(const edm::ParameterSet&);
+   ~IsoTrackProducer() override;  
   
   static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
    
@@ -133,7 +133,7 @@ private:
 //
 // constructors and destructor
 //
-Breno_IsoTrackProducer::Breno_IsoTrackProducer(const edm::ParameterSet& iConfig) 
+IsoTrackProducer::IsoTrackProducer(const edm::ParameterSet& iConfig) 
 {   
   //register your product    
   //produces<std::vector<TLorentzVector> > ("tracks");
@@ -223,7 +223,7 @@ Breno_IsoTrackProducer::Breno_IsoTrackProducer(const edm::ParameterSet& iConfig)
 }
 
 
-Breno_IsoTrackProducer::~Breno_IsoTrackProducer()
+IsoTrackProducer::~IsoTrackProducer()
 {}
 
 template <typename T1, typename T2>
@@ -306,7 +306,7 @@ bool checkNoDeadNoisyECALInTrackCone(T hitcollection, reco::Track track, edm::ES
 //
 
 // ------------ method called to produce the data  ------------
-void Breno_IsoTrackProducer::produce(edm::StreamID, edm::Event& iEvent, const edm::EventSetup& iSetup) const
+void IsoTrackProducer::produce(edm::StreamID, edm::Event& iEvent, const edm::EventSetup& iSetup) const
 {
   using namespace edm;
   
@@ -620,11 +620,11 @@ void Breno_IsoTrackProducer::produce(edm::StreamID, edm::Event& iEvent, const ed
 }
 
 // ------------ method fills 'descriptions' with the allowed parameters for the module  ------------
-void Breno_IsoTrackProducer::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
+void IsoTrackProducer::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
   edm::ParameterSetDescription desc;
   desc.setUnknown();
   descriptions.addDefault(desc);
 }
 
 //define this as a plug-in
-DEFINE_FWK_MODULE(Breno_IsoTrackProducer);
+DEFINE_FWK_MODULE(IsoTrackProducer);

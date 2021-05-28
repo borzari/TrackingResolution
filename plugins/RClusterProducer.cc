@@ -75,10 +75,10 @@
 #include "RecoTracker/TransientTrackingRecHit/interface/Traj2TrackHits.h"
 #include<limits>
 
-class Breno_RClusterProducer : public edm::stream::EDProducer<> {
+class RClusterProducer : public edm::stream::EDProducer<> {
    public:
-      explicit Breno_RClusterProducer(const edm::ParameterSet&);
-      ~Breno_RClusterProducer();
+      explicit RClusterProducer(const edm::ParameterSet&);
+      ~RClusterProducer();
 
       static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
@@ -106,7 +106,7 @@ class Breno_RClusterProducer : public edm::stream::EDProducer<> {
 
 };
 
-Breno_RClusterProducer::Breno_RClusterProducer(const edm::ParameterSet& iConfig)
+RClusterProducer::RClusterProducer(const edm::ParameterSet& iConfig)
 {
 
    produces<edmNew::DetSetVector<SiPixelCluster>>("").setBranchAlias("");
@@ -129,11 +129,11 @@ Breno_RClusterProducer::Breno_RClusterProducer(const edm::ParameterSet& iConfig)
 }
 
 
-Breno_RClusterProducer::~Breno_RClusterProducer()
+RClusterProducer::~RClusterProducer()
 {}
 
 void
-Breno_RClusterProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
+RClusterProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
   using namespace edm;
   
@@ -420,19 +420,19 @@ Breno_RClusterProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetu
 }
 
 void
-Breno_RClusterProducer::beginStream(edm::StreamID)
+RClusterProducer::beginStream(edm::StreamID)
 {}
 
 void
-Breno_RClusterProducer::endStream() {
+RClusterProducer::endStream() {
 }
 
 
 void
-Breno_RClusterProducer::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
+RClusterProducer::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
   edm::ParameterSetDescription desc;
   desc.setUnknown();
   descriptions.addDefault(desc);
 }
 
-DEFINE_FWK_MODULE(Breno_RClusterProducer);
+DEFINE_FWK_MODULE(RClusterProducer);

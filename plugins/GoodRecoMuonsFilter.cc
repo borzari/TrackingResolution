@@ -17,10 +17,10 @@
 #include "DataFormats/TrackReco/interface/TrackFwd.h"
 #include <TLorentzVector.h>
 
-class Breno_GoodRecoMuonsFilter : public edm::stream::EDFilter<> {
+class GoodRecoMuonsFilter : public edm::stream::EDFilter<> {
   public:
-    explicit Breno_GoodRecoMuonsFilter(const edm::ParameterSet&);
-    ~Breno_GoodRecoMuonsFilter();
+    explicit GoodRecoMuonsFilter(const edm::ParameterSet&);
+    ~GoodRecoMuonsFilter();
 
     static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
@@ -35,7 +35,7 @@ class Breno_GoodRecoMuonsFilter : public edm::stream::EDFilter<> {
     float maxabseta_;
 };
 
-Breno_GoodRecoMuonsFilter::Breno_GoodRecoMuonsFilter(const edm::ParameterSet& iConfig)
+GoodRecoMuonsFilter::GoodRecoMuonsFilter(const edm::ParameterSet& iConfig)
 {
   muonsToken = consumes<std::vector<reco::Muon>>(iConfig.getParameter<edm::InputTag>("muonlabel"));
   tracksToken = consumes<reco::TrackCollection>(iConfig.getParameter<edm::InputTag>("trackslabel"));
@@ -43,12 +43,12 @@ Breno_GoodRecoMuonsFilter::Breno_GoodRecoMuonsFilter(const edm::ParameterSet& iC
   maxabseta_ = iConfig.getParameter<double>("maxAbsEta");
 }
 
-Breno_GoodRecoMuonsFilter::~Breno_GoodRecoMuonsFilter()
+GoodRecoMuonsFilter::~GoodRecoMuonsFilter()
 {
 }
 
 bool
-Breno_GoodRecoMuonsFilter::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
+GoodRecoMuonsFilter::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
 
   using namespace edm;
@@ -82,18 +82,18 @@ Breno_GoodRecoMuonsFilter::filter(edm::Event& iEvent, const edm::EventSetup& iSe
 }
 
 void
-Breno_GoodRecoMuonsFilter::beginStream(edm::StreamID)
+GoodRecoMuonsFilter::beginStream(edm::StreamID)
 {
 }
 
 void
-Breno_GoodRecoMuonsFilter::endStream() {
+GoodRecoMuonsFilter::endStream() {
 }
 
 void
-Breno_GoodRecoMuonsFilter::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
+GoodRecoMuonsFilter::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
   edm::ParameterSetDescription desc;
   desc.setUnknown();
   descriptions.addDefault(desc);
 }
-DEFINE_FWK_MODULE(Breno_GoodRecoMuonsFilter);
+DEFINE_FWK_MODULE(GoodRecoMuonsFilter);

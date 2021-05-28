@@ -25,13 +25,13 @@
 #include "DataFormats/DetId/interface/DetId.h"
 #include "RecoLocalTracker/SiStripClusterizer/interface/SiStripClusterInfo.h"
 #include "Geometry/Records/interface/TrackerDigiGeometryRecord.h"
-#include "tracking_resolution/interface/BrenoTrackingResolution.h"
+#include "tracking_resolution/interface/TrackingResolution.h"
 // -----------------------------
 // constructors and destructor
 // -----------------------------
-BrenoTrackingResolution::BrenoTrackingResolution(const edm::ParameterSet& ps):
+TrackingResolution::TrackingResolution(const edm::ParameterSet& ps):
   parameters_(ps),
-  moduleName_(parameters_.getUntrackedParameter<std::string>("moduleName", "BrenoTrackingResolution")),
+  moduleName_(parameters_.getUntrackedParameter<std::string>("moduleName", "TrackingResolution")),
   folderName_(parameters_.getUntrackedParameter<std::string>("folderName", "TrackRefitting")),
   hitsRemain(parameters_.getUntrackedParameter<std::string>("hitsRemainInput", "3")),
   minTracksEta(parameters_.getUntrackedParameter<double>("minTracksEtaInput", 0.0)),
@@ -73,7 +73,7 @@ BrenoTrackingResolution::BrenoTrackingResolution(const edm::ParameterSet& ps):
 
 }
 
-void BrenoTrackingResolution::bookHistograms(DQMStore::IBooker &iBook, edm::Run const& iRun, edm::EventSetup const& iSetup) {
+void TrackingResolution::bookHistograms(DQMStore::IBooker &iBook, edm::Run const& iRun, edm::EventSetup const& iSetup) {
 
   std::string currentFolder = folderName_+"/" ;
   iBook.setCurrentFolder(currentFolder);
@@ -114,7 +114,7 @@ void BrenoTrackingResolution::bookHistograms(DQMStore::IBooker &iBook, edm::Run 
   trackDxyHigPt_ = iBook.book1D("trackDxy"+hitsRemain+"lHigPt", "Track d_{xy} - "+hitsRemain+" layers",40,0.0,2.0);
 
 }
-void BrenoTrackingResolution::analyze(edm::Event const& iEvent, edm::EventSetup const& iSetup) {
+void TrackingResolution::analyze(edm::Event const& iEvent, edm::EventSetup const& iSetup) {
 
   edm::Handle< std::vector<reco::Muon> > muons;
   edm::Handle< std::vector<reco::PFCandidate> > pfcands;
@@ -250,7 +250,7 @@ void BrenoTrackingResolution::analyze(edm::Event const& iEvent, edm::EventSetup 
   }
 
 }
-void BrenoTrackingResolution::endLuminosityBlock(edm::LuminosityBlock const& lumiBlock, edm::EventSetup const& eSetup){}
+void TrackingResolution::endLuminosityBlock(edm::LuminosityBlock const& lumiBlock, edm::EventSetup const& eSetup){}
 // Define this as a plug-in
 #include "FWCore/Framework/interface/MakerMacros.h"
-DEFINE_FWK_MODULE(BrenoTrackingResolution);
+DEFINE_FWK_MODULE(TrackingResolution);

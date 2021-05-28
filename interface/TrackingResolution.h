@@ -1,5 +1,5 @@
-#ifndef BrenoTrackingResolution_h
-#define BrenoTrackingResolution_h
+#ifndef TrackingResolution_h
+#define TrackingResolution_h
 
 #include <string>
 #include <vector>
@@ -32,9 +32,9 @@ class TrackCollection;
 class VertexCollection;
 class TrackingRecHit;
 
-class BrenoTrackingResolution : public DQMEDAnalyzer {
+class TrackingResolution : public DQMEDAnalyzer {
 public:
-  BrenoTrackingResolution( const edm::ParameterSet& );
+  TrackingResolution( const edm::ParameterSet& );
 
 protected:
 

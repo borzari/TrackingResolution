@@ -7,7 +7,7 @@ options.parseArguments()
 
 process = cms.Process("HITREMOVER")
 process.load("FWCore.MessageService.MessageLogger_cfi")
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1))
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))
 process.options  = cms.untracked.PSet( wantSummary = cms.untracked.bool(True),
                                        SkipEvent = cms.untracked.vstring('ProductNotFound') )
 
@@ -33,7 +33,7 @@ from Configuration.AlCa.GlobalTag import GlobalTag
 
 process.GlobalTag = GlobalTag(process.GlobalTag, '102X_upgrade2018_realistic_v15', '')
     
-process.goodMuons = cms.EDFilter("Breno_GoodRecoMuonsFilter",
+process.goodMuons = cms.EDFilter("GoodRecoMuonsFilter",
     trackslabel = cms.InputTag("generalTracks"),
     muonlabel = cms.InputTag("muons"),
     minPt = cms.double(15),
@@ -41,7 +41,7 @@ process.goodMuons = cms.EDFilter("Breno_GoodRecoMuonsFilter",
     filter = cms.bool(True)
 )
                                          
-process.rCluster = cms.EDProducer("Breno_RClusterProducer",
+process.rCluster = cms.EDProducer("RClusterProducer",
                                       allTracks = cms.InputTag("generalTracks"), 
                                       matchElectrons = cms.InputTag("gedGsfElectrons"),
                                       matchMuons = cms.InputTag("muons"),

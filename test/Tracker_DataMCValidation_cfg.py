@@ -60,8 +60,8 @@ process.load("FWCore.MessageLogger.MessageLogger_cfi")
 process.MessageLogger.cerr.FwkReport.reportEvery = 1
 
 # Tracker Data MC validation suite
-process.trackingResolution3 = DQMEDAnalyzer("BrenoTrackingResolution",
-    moduleName        = cms.untracked.string("testBrenoTrackingResolution"),
+process.trackingResolution3 = DQMEDAnalyzer("TrackingResolution",
+    moduleName        = cms.untracked.string("testTrackingResolution"),
     folderName        = cms.untracked.string("TrackRefitting"),
     hitsRemainInput        = cms.untracked.string("3"),
     minTracksEtaInput      = cms.untracked.double(0.0),
