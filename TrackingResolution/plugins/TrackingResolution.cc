@@ -25,7 +25,7 @@
 #include "DataFormats/DetId/interface/DetId.h"
 #include "RecoLocalTracker/SiStripClusterizer/interface/SiStripClusterInfo.h"
 #include "Geometry/Records/interface/TrackerDigiGeometryRecord.h"
-#include "tracking_resolution/interface/TrackingResolution.h"
+#include "TrackingResolution/TrackingResolution/interface/TrackingResolution.h"
 // -----------------------------
 // constructors and destructor
 // -----------------------------

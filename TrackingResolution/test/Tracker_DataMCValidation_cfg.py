@@ -23,7 +23,7 @@ process.maxEvents = cms.untracked.PSet(
 process.source = cms.Source("PoolSource",
   secondaryFileNames = cms.untracked.vstring(),
   fileNames = cms.untracked.vstring([
-    'file:/afs/cern.ch/work/b/borzari/CMSSW_10_2_7/src/tracking_resolution/rereco_output_3.root'
+    'file:/afs/cern.ch/work/b/borzari/CMSSW_10_2_7/src/TrackingResolution/TrackingResolution/rereco_output.root'
   ])
 )
 

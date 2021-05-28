@@ -24,26 +24,15 @@ options.register ('outputFileName',
 				  VarParsing.multiplicity.singleton,
 				  VarParsing.varType.string,
 				  "Output file for edmFile")
-options.register ('step',
-				  '4',
-				  VarParsing.multiplicity.singleton,
-				  VarParsing.varType.string,
-				  "Shortening step to be processed")	
 options.register ('skipEvents',
 				  0,
 				  VarParsing.multiplicity.singleton,
 				  VarParsing.varType.int,
 				  "skipEvents")	
-options.register ('MuonSeeds',
-				  1,
-				  VarParsing.multiplicity.singleton,
-				  VarParsing.varType.int,
-				  "Use of Muon seeded iterations")					  			  
 options.parseArguments()				  
 
 # TODO: add rCluster to output to keep
-myCollection = "rCluster"+options.step
-hitsRemain = options.step 
+myCollection = "rCluster3"
 if myCollection == "rClusterAll": 
 	myCollection = "rCluster" 
 process = cms.Process("reRECO")
@@ -69684,22 +69673,17 @@ process.RECOoutput = cms.OutputModule("PoolOutputModule",
         dataTier = cms.untracked.string('RECO'),
         filterName = cms.untracked.string('')
     ),
-    fileName = cms.untracked.string (options.outputFileName+'_'+hitsRemain+'.root'),
+    fileName = cms.untracked.string (options.outputFileName),
     outputCommands = cms.untracked.vstring( (
     'drop *',
-#    'keep recoTracks_rCluster'+hitsRemain+'_*_HITREMOVER',
     'keep recoTracks_rCluster3_*_HITREMOVER',
     'keep recoTracks_rCluster4_*_HITREMOVER',
     'keep recoTracks_rCluster5_*_HITREMOVER',
     'keep recoTracks_rCluster6_*_HITREMOVER',
     'keep recoTracks_rCluster7_*_HITREMOVER',
     'keep recoTracks_rCluster8_*_HITREMOVER',
-#    'keep *_isotrackproducer_*_*',
-#    'keep recoMuons_muons_*_*',
     'keep recoMuons_muons_*_RECO',
-#    'keep recoPFCandidates_particleFlow_*_*',
     'keep recoPFCandidates_particleFlow_*_RECO',
-#    'keep recoTracks_generalTracks_*_*',
     'keep recoTracks_generalTracks_*_reRECO',
     'keep recoTracks_generalTracks3_*_reRECO',
     'keep recoTracks_generalTracks4_*_reRECO',
@@ -69707,8 +69691,6 @@ process.RECOoutput = cms.OutputModule("PoolOutputModule",
     'keep recoTracks_generalTracks6_*_reRECO',
     'keep recoTracks_generalTracks7_*_reRECO',
     'keep recoTracks_generalTracks8_*_reRECO'
-#    'keep recoTrackExtras_generalTracks_*_*',
-#    'keep recoPFJets_ak4PFJets_*_*',
          ) ),
     splitLevel = cms.untracked.int32(0)
 )
@@ -81967,11 +81949,6 @@ process.simSiStripDigis = cms.EDAlias(
     )
 )
 
-if options.MuonSeeds:
-    process.schedule = cms.Schedule(*[ process.reconstruction_step_track, process.reconstruction_step_track3, process.endjob_step, process.RECOoutput_step ])
-#    process.schedule = cms.Schedule(*[ process.reconstruction_step_track3, process.endjob_step, process.RECOoutput_step ])
-#    process.schedule = cms.Schedule(*[ process.reconstruction_step_track, process.reconstruction_step_track3, process.reconstruction_step_track4, process.reconstruction_step_track5, process.reconstruction_step_track6, process.reconstruction_step_track7, process.reconstruction_step_track8, process.endjob_step, process.RECOoutput_step ])
-else: 
-	process.schedule = cms.Schedule(*[ process.reconstruction_step_noMuonSeededIterations, process.endjob_step, process.RECOoutput_step ])
-
-
+#process.schedule = cms.Schedule(*[ process.reconstruction_step_track, process.reconstruction_step_track3, process.endjob_step, process.RECOoutput_step ])
+#process.schedule = cms.Schedule(*[ process.reconstruction_step_track3, process.endjob_step, process.RECOoutput_step ])
+process.schedule = cms.Schedule(*[ process.reconstruction_step_track, process.reconstruction_step_track3, process.reconstruction_step_track4, process.reconstruction_step_track5, process.reconstruction_step_track6, process.reconstruction_step_track7, process.reconstruction_step_track8, process.endjob_step, process.RECOoutput_step ])
