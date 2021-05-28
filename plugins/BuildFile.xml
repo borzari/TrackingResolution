@@ -16,6 +16,6 @@
 <use   name="RecoMuon/GlobalTrackingTools"/>
 <use   name="RecoLocalTracker/SiStripClusterizer" />
 <flags  CXXFLAGS="-mtune=core2 -march=core2 -O3 -pipe"/>
-<library  file="*.cc"  name="TrackingResolutionPlugins">
+<library  file="*.cc"  name="tracking_resolutionPlugins">
   <flags  EDM_PLUGIN="1"/>
 </library>
