@@ -1,5 +1,9 @@
 import sys, os
 import FWCore.ParameterSet.Config as cms
+from FWCore.ParameterSet.VarParsing import VarParsing
+
+options = VarParsing('analysis')
+options.parseArguments()
 
 process = cms.Process('HARVESTING')
 
@@ -18,12 +22,17 @@ process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32(-1)
 )
 
+filenames = []
+
+for i in range(len(options.inputFiles)):
+    filenames.append("file:"+options.inputFiles[i])
+
 # Input source
 process.source = cms.Source("PoolSource",
     secondaryFileNames = cms.untracked.vstring(),
-    fileNames = cms.untracked.vstring([
-       'file:diffreco_test_step1_DQM_only3layers.root'
-    ]),
+    fileNames = cms.untracked.vstring(
+       filenames
+    ),
     processingMode = cms.untracked.string('RunsAndLumis')
 )
 
