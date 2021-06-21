@@ -1,6 +1,6 @@
 # Tracking Resolution
 
-This a repository compiling all the tracking resolution work. Please, use CMSSW 10_2_7 for the tests, which is the version that works so far.
+This a repository compiling all the tracking resolution work. Please, use **CMSSW 10_2_7** for the tests, which is the version that works so far.
 
 To produce the histograms, there are a few steps needed. Inside the `TrackingResolution/TrackingResolution/` folder you should
   - Amputate the tracks
