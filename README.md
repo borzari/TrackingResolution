@@ -19,3 +19,4 @@ Looking for type: edm::SortedCollection<HBHERecHit,edm::StrictWeakOrdering<HBHER
 Looking for module label: hbheprereco
 Looking for productInstanceName:
 ```
+Regardless of the module `hbheprereco` being defined in line 360 of `python/reRECO_new.py`.
