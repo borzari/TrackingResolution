@@ -10,4 +10,4 @@ To produce the histograms, there are a few steps needed. Inside the `TrackingRes
   - Run the Harvest file: `cmsRun test/Tracker_DataMCValidation_Harvest_cfg.py inputFiles=DQM_reRECO_OUTPUT_FILE_NAME.root`
   - The output file with the histograms will be named something similar to `DQM_V0001_R000000001__Global__CMSSW_X_Y_Z__RECO.root`
 
-It is also possible to use the file `python/reRECO_new.py` instead of `python/reRECO_Autumn18.py`. Both are equivalent, but `python/reRECO_new.py` only uses the relevant modules and might be easily portable to other CMSSW versions.
+It is also possible to use the file `python/reRECO_new.py` instead of `python/reRECO_Autumn18.py`. Both are equivalent, but `python/reRECO_new.py` only uses the relevant modules and might be easily portable to other CMSSW versions. Tests are being made with **CMSSW 11_3_0_pre2**, using the `python/reRECO_new.py` (notice that the track amputation step works without any issue in this version), but no success so far. The error is the following: 
