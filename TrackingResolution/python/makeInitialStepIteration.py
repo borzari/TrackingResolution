@@ -14,6 +14,7 @@ import RecoTracker.TkSeedingLayers.PixelLayerQuadruplets_cfi
 from RecoTracker.TkSeedGenerator.trackerClusterCheckDefault_cfi import trackerClusterCheckDefault as _trackerClusterCheckDefault
 import RecoTracker.TkSeedingLayers.PixelLayerQuadruplets_cfi
 from RecoPixelVertexing.PixelTriplets.pixelTripletHLTEDProducer_cfi import pixelTripletHLTEDProducer as _pixelTripletHLTEDProducer
+from RecoJets.JetProducers.TracksForJets_cff import trackRefsForJets
 
 def makeInitialStepIteration():
 
