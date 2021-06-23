@@ -40,7 +40,7 @@ process.out = cms.OutputModule("PoolOutputModule",
     SelectEvents = cms.untracked.PSet(SelectEvents = cms.vstring("p"))
  )
 
-process.load("TrackingResolution.TrackingResolution.RClusterSeq_cfi")
+process.load("TrackingResolution.TrackingResolution.RClusterSeq_cff")
 
 process.p = cms.Path(process.RClusterSeq)
 process.e = cms.EndPath(process.out)
