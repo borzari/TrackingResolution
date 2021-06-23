@@ -17,11 +17,9 @@ goodMuons = cms.EDFilter(
     filter=cms.bool(True),
 )
 
-RClusterTask.add(goodMuons)
-
 for suf in range(3, 9):
     moduleLabel = "rCluster" + str(suf)
     vars()[moduleLabel] = rCluster.clone(layersRemaining=cms.uint32(suf))
     RClusterTask.add(vars()[moduleLabel])
 
-RClusterSeq = cms.Sequence(RClusterTask)
+RClusterSeq = cms.Sequence(goodMuons, RClusterTask)
