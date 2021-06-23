@@ -252,7 +252,7 @@ def makeInitialStepIteration():
         MeasurementTrackerEvent = cms.InputTag("MeasurementTrackerEvent"+hits),
         src = cms.InputTag("initialStepSeeds"+hits)
     )
-    theTask.add(theTask.add(vars()["initialStepSeeds"+hits]))
+    theTask.add(vars()["initialStepSeeds"+hits])
 
     vars()["initialStepTracks"+hits] = initialStepTracks.clone(
         MeasurementTrackerEvent = cms.InputTag("MeasurementTrackerEvent"+hits),
