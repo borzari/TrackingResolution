@@ -192,6 +192,11 @@ def makeInitialStepIteration():
         useSimpleMF = cms.bool(False)
     )
 
+    initialStepTrackRefsForJets = trackRefsForJets.clone(
+        particleType = cms.string('pi+'),
+        src = cms.InputTag("initialStepTracks")
+    )
+
     hits = "3"
     myCollection = "rCluster"+hits
 
