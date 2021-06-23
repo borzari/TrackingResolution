@@ -198,6 +198,18 @@ def makeInitialStepIteration():
         src = cms.InputTag("initialStepTracks")
     )
 
+process.initialStep = TrackMVAClassifierPrompt.clone(
+    beamspot = cms.InputTag("offlineBeamSpot"),
+    ignoreVertices = cms.bool(False),
+    mva = cms.PSet(
+        GBRForestFileName = cms.string(''),
+        GBRForestLabel = cms.string('MVASelectorInitialStep_Phase1')
+    ),
+    qualityCuts = cms.vdouble(-0.95, -0.85, -0.75),
+    src = cms.InputTag("initialStepTracks"),
+    vertices = cms.InputTag("firstStepPrimaryVertices")
+)
+
     hits = "3"
     myCollection = "rCluster"+hits
 
