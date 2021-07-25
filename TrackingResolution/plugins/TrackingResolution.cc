@@ -41,13 +41,17 @@ TrackingResolution::TrackingResolution(const edm::ParameterSet& ps):
   lowPtRegion(parameters_.getUntrackedParameter<double>("lowPtRegionInput", 15.0)),
   medPtRegion(parameters_.getUntrackedParameter<double>("medPtRegionInput", 30.0)),
   higPtRegion(parameters_.getUntrackedParameter<double>("higPtRegionInput", 100.0)),
+  maxDxy(parameters_.getUntrackedParameter<double>("maxDxyInput", 0.2)),
+  maxDz(parameters_.getUntrackedParameter<double>("maxDzInput", 0.1)),
+  maxDr(parameters_.getUntrackedParameter<double>("maxDrInput", 0.01)),
+  minNumberOfLayers(parameters_.getUntrackedParameter<int>("minNumberOfLayersInput", 10)),
   muonsTag(parameters_.getUntrackedParameter<edm::InputTag>("muonsInputTag", edm::InputTag("muons", "", "RECO"))),
-  pfcandsTag(parameters_.getUntrackedParameter<edm::InputTag>("pfcandsInputTag", edm::InputTag("particleFlow", "", "RECO"))),
   tracksTag(parameters_.getUntrackedParameter<edm::InputTag>("tracksInputTag", edm::InputTag("rCluster4", "", "HITREMOVER"))),
+  primVertexTag(parameters_.getUntrackedParameter<edm::InputTag>("primVertexInputTag", edm::InputTag("offlinePrimaryVertices", "", "RECO"))),
   tracksRerecoTag(parameters_.getUntrackedParameter<edm::InputTag>("tracksRerecoInputTag", edm::InputTag("generalTracks", "", "reRECO"))),
   muonsToken(consumes<std::vector<reco::Muon>>(muonsTag)),
-  pfcandsToken(consumes<std::vector<reco::PFCandidate>>(pfcandsTag)),
   tracksToken(consumes<std::vector<reco::Track>>(tracksTag)),
+  primVertexToken(consumes<std::vector<reco::Vertex>>(primVertexTag)),
   tracksRerecoToken(consumes<std::vector<reco::Track>>(tracksRerecoTag))
 {
 
@@ -60,16 +64,6 @@ TrackingResolution::TrackingResolution(const edm::ParameterSet& ps):
   trackChi2ndofLowPt_ = nullptr;
   trackChi2ndofMedPt_ = nullptr;
   trackChi2ndofHigPt_ = nullptr;
-
-  trackDzAllPt_ = nullptr;
-  trackDzLowPt_ = nullptr;
-  trackDzMedPt_ = nullptr;
-  trackDzHigPt_ = nullptr;
-
-  trackDxyAllPt_ = nullptr;
-  trackDxyLowPt_ = nullptr;
-  trackDxyMedPt_ = nullptr;
-  trackDxyHigPt_ = nullptr;
 
 }
 
@@ -91,67 +85,39 @@ void TrackingResolution::bookHistograms(DQMStore::IBooker &iBook, edm::Run const
   trackChi2ndofMedPt_ = iBook.book1D("trackChi2ndof"+hitsRemain+"lMedPt", "Chi^{2} / ndof - "+hitsRemain+" layers",40,0.0,2.0);
   trackChi2ndofHigPt_ = iBook.book1D("trackChi2ndof"+hitsRemain+"lHigPt", "Chi^{2} / ndof - "+hitsRemain+" layers",40,0.0,2.0);
 
-//  trackDzAllPt_ = iBook.book1D("trackDz"+hitsRemain+"lAllPt", "Track d_{z} - "+hitsRemain+" layers",40,-10.0,10.0);
-//  trackDzLowPt_ = iBook.book1D("trackDz"+hitsRemain+"lLowPt", "Track d_{z} - "+hitsRemain+" layers",40,-10.0,10.0);
-//  trackDzMedPt_ = iBook.book1D("trackDz"+hitsRemain+"lMedPt", "Track d_{z} - "+hitsRemain+" layers",40,-10.0,10.0);
-//  trackDzHigPt_ = iBook.book1D("trackDz"+hitsRemain+"lHigPt", "Track d_{z} - "+hitsRemain+" layers",40,-10.0,10.0);
-
-  muontrackDxyAllPt_ = iBook.book1D("muontrackDxy"+hitsRemain+"lAllPt", "Track d_{xy} - "+hitsRemain+" layers",100,-0.1,0.1);
-
-//  trackDxyAllPt_ = iBook.book1D("trackDxy"+hitsRemain+"lAllPt", "Track d_{xy} - "+hitsRemain+" layers",100,-0.1,0.1);
-//  trackDxyLowPt_ = iBook.book1D("trackDxy"+hitsRemain+"lLowPt", "Track d_{xy} - "+hitsRemain+" layers",100,-0.1,0.1);
-//  trackDxyMedPt_ = iBook.book1D("trackDxy"+hitsRemain+"lMedPt", "Track d_{xy} - "+hitsRemain+" layers",100,-0.1,0.1);
-//  trackDxyHigPt_ = iBook.book1D("trackDxy"+hitsRemain+"lHigPt", "Track d_{xy} - "+hitsRemain+" layers",100,-0.1,0.1);
-
-  trackDzAllPt_ = iBook.book1D("trackDz"+hitsRemain+"lAllPt", "Track d_{z} - "+hitsRemain+" layers",40,0.0,2.0);
-  trackDzLowPt_ = iBook.book1D("trackDz"+hitsRemain+"lLowPt", "Track d_{z} - "+hitsRemain+" layers",40,0.0,2.0);
-  trackDzMedPt_ = iBook.book1D("trackDz"+hitsRemain+"lMedPt", "Track d_{z} - "+hitsRemain+" layers",40,0.0,2.0);
-  trackDzHigPt_ = iBook.book1D("trackDz"+hitsRemain+"lHigPt", "Track d_{z} - "+hitsRemain+" layers",40,0.0,2.0);
-
-  trackDxyAllPt_ = iBook.book1D("trackDxy"+hitsRemain+"lAllPt", "Track d_{xy} - "+hitsRemain+" layers",40,0.0,2.0);
-  trackDxyLowPt_ = iBook.book1D("trackDxy"+hitsRemain+"lLowPt", "Track d_{xy} - "+hitsRemain+" layers",40,0.0,2.0);
-  trackDxyMedPt_ = iBook.book1D("trackDxy"+hitsRemain+"lMedPt", "Track d_{xy} - "+hitsRemain+" layers",40,0.0,2.0);
-  trackDxyHigPt_ = iBook.book1D("trackDxy"+hitsRemain+"lHigPt", "Track d_{xy} - "+hitsRemain+" layers",40,0.0,2.0);
-
 }
 void TrackingResolution::analyze(edm::Event const& iEvent, edm::EventSetup const& iSetup) {
 
   edm::Handle< std::vector<reco::Muon> > muons;
-  edm::Handle< std::vector<reco::PFCandidate> > pfcands;
   edm::Handle< std::vector<reco::Track> > tracks;
+  edm::Handle< std::vector<reco::Vertex> > vertices; 
   edm::Handle< std::vector<reco::Track> > tracks_rereco;
 
   iEvent.getByToken(muonsToken, muons);
-  iEvent.getByToken(pfcandsToken, pfcands);
   iEvent.getByToken(tracksToken, tracks);
+  iEvent.getByToken(primVertexToken, vertices);
   iEvent.getByToken(tracksRerecoToken, tracks_rereco);
+
+  const reco::Vertex vertex = vertices->at(0);
 
   for (std::vector<reco::Muon>::const_iterator muon = muons->begin(); muon != muons->end(); ++muon) {
 
     TLorentzVector mvec;
     mvec.SetPtEtaPhiM(muon->pt(),muon->eta(),muon->phi(),muon->mass());
 
-    double summed_pt = 0.0;
-    for (std::vector<reco::PFCandidate>::const_iterator pfcand = pfcands->begin(); pfcand != pfcands->end(); ++pfcand) {
-      TLorentzVector pfvec;
-      pfvec.SetPtEtaPhiM(pfcand->pt(), pfcand->eta(), pfcand->phi(), pfcand->mass());
-      if(pfvec.DeltaR(mvec)>0.02 and pfvec.DeltaR(mvec)<0.3){
-        summed_pt += pfcand->pt();
-      }
-    }
-    if(summed_pt/muon->pt()>0.2) continue;
-
     for (std::vector<reco::Track>::const_iterator track = tracks->begin(); track != tracks->end(); ++track) {
 
+      Double_t dxy = (track->dxy(vertex.position()));
+      Double_t dz = (track->dz(vertex.position()));
       TLorentzVector tvec;
       tvec.SetPtEtaPhiM(track->pt(),track->eta(),track->phi(),0.0);
-      if(tvec.DeltaR(mvec)<0.01){
+      if(tvec.DeltaR(mvec)<maxDr){
 
-        if(track->hitPattern().trackerLayersWithMeasurement() > 10){
+        if(track->hitPattern().trackerLayersWithMeasurement() > minNumberOfLayers){
 
-//          if(abs(track->dxy()) < 0.2){
+          if(abs(dxy) < maxDxy){
 
-//            if(abs(track->dz()) < 0.1){
+            if(abs(dz) < maxDz){
 
               if(abs(track->eta())>maxTracksEta or track->pt()<minTracksPt) break;
 
@@ -160,7 +126,7 @@ void TrackingResolution::analyze(edm::Event const& iEvent, edm::EventSetup const
                 TLorentzVector trerecovec;
                 trerecovec.SetPtEtaPhiM(track_rereco->pt(),track_rereco->eta(),track_rereco->phi(),0.0);
                 double deltaR = tvec.DeltaR(trerecovec);
-                if(deltaR < 0.01){
+                if(deltaR < maxDr){
 
                   if(track_rereco->pt()>=minTracksPt && track_rereco->pt()<=maxTracksPt && abs(track_rereco->eta())>=minTracksEta && abs(track_rereco->eta())<=maxTracksEta){
 
@@ -171,39 +137,22 @@ void TrackingResolution::analyze(edm::Event const& iEvent, edm::EventSetup const
                     trackTrackerLayers_->Fill(track_trackerLayersWithMeasurement);
 
                     trackPtAllPt_->Fill(1.0*track_rereco->pt()/track->pt());
-//                    trackDzAllPt_->Fill(track_rereco->dz());
-//                    trackDxyAllPt_->Fill(track_rereco->dxy());
-//                    muontrackDxyAllPt_->Fill(track->dxy());
-                    trackDzAllPt_->Fill(1.0*track_rereco->dz()/track->dz());
-                    trackDxyAllPt_->Fill(1.0*track_rereco->dxy()/track->dxy());
 
                     if(track->pt()>=lowPtRegion && track->pt()<medPtRegion){
 
                       trackPtLowPt_->Fill(1.0*track_rereco->pt()/track->pt());
-//                      trackDzLowPt_->Fill(track_rereco->dz());
-//                      trackDxyLowPt_->Fill(track_rereco->dxy());
-                      trackDzLowPt_->Fill(1.0*track_rereco->dz()/track->dz());
-                      trackDxyLowPt_->Fill(1.0*track_rereco->dxy()/track->dxy());
 
                     }
 
                     if(track->pt()>=medPtRegion && track->pt()<higPtRegion){
 
                       trackPtMedPt_->Fill(1.0*track_rereco->pt()/track->pt());
-//                      trackDzMedPt_->Fill(track_rereco->dz());
-//                      trackDxyMedPt_->Fill(track_rereco->dxy());
-                      trackDzMedPt_->Fill(1.0*track_rereco->dz()/track->dz());
-                      trackDxyMedPt_->Fill(1.0*track_rereco->dxy()/track->dxy());
 
                     }
 
                     if(track->pt()>=higPtRegion){
 
                       trackPtHigPt_->Fill(1.0*track_rereco->pt()/track->pt());
-//                      trackDzHigPt_->Fill(track_rereco->dz());
-//                      trackDxyHigPt_->Fill(track_rereco->dxy());
-                      trackDzHigPt_->Fill(1.0*track_rereco->dz()/track->dz());
-                      trackDxyHigPt_->Fill(1.0*track_rereco->dxy()/track->dxy());
 
                     }
 
@@ -237,9 +186,9 @@ void TrackingResolution::analyze(edm::Event const& iEvent, edm::EventSetup const
 
               }
 
-//            }
+            }
 
-//          }
+          }
 
         }
 

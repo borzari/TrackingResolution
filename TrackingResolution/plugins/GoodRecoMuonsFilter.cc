@@ -33,6 +33,8 @@ class GoodRecoMuonsFilter : public edm::stream::EDFilter<> {
     edm::EDGetTokenT<std::vector<reco::Track>> tracksToken;
     float minpt_;
     float maxabseta_;
+    float maxDr_;
+    float minNumberOfLayers_;
 };
 
 GoodRecoMuonsFilter::GoodRecoMuonsFilter(const edm::ParameterSet& iConfig)
@@ -41,6 +43,8 @@ GoodRecoMuonsFilter::GoodRecoMuonsFilter(const edm::ParameterSet& iConfig)
   tracksToken = consumes<reco::TrackCollection>(iConfig.getParameter<edm::InputTag>("trackslabel"));
   minpt_     = iConfig.getParameter<double>("minPt");
   maxabseta_ = iConfig.getParameter<double>("maxAbsEta");
+  maxDr_     = iConfig.getParameter<double>("maxDr");
+  minNumberOfLayers_ = iConfig.getParameter<int>("minNumberOfLayers");
 }
 
 GoodRecoMuonsFilter::~GoodRecoMuonsFilter()
@@ -67,9 +71,9 @@ GoodRecoMuonsFilter::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
         TLorentzVector pTrack (track.px(), track.py(), track.pz(), track.pt());
         TLorentzVector pMuon (muon.px(), muon.py(), muon.pz(), muon.pt());
         Double_t dr = pTrack.DeltaR(pMuon);
-        if (dr<0.05) {
+        if (dr<maxDr_) {
           reco::HitPattern hitpattern = track.hitPattern();
-          if (hitpattern.trackerLayersWithMeasurement()>10) {
+          if (hitpattern.trackerLayersWithMeasurement()>minNumberOfLayers_) {
             result = true;
             break;
           }

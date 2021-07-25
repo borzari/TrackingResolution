@@ -27,11 +27,6 @@
 #include "HLTrigger/HLTcore/interface/HLTConfigProvider.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
 
-class BeamSpot;
-class TrackCollection;
-class VertexCollection;
-class TrackingRecHit;
-
 class TrackingResolution : public DQMEDAnalyzer {
 public:
   TrackingResolution( const edm::ParameterSet& );
@@ -60,13 +55,18 @@ private:
   double medPtRegion;
   double higPtRegion;
 
+  double maxDxy;
+  double maxDz;
+  double maxDr;
+  double minNumberOfLayers;
+
   const edm::InputTag muonsTag;
-  const edm::InputTag pfcandsTag;
   const edm::InputTag tracksTag;
+  const edm::InputTag primVertexTag;
   const edm::InputTag tracksRerecoTag;
   const edm::EDGetTokenT<std::vector<reco::Muon>> muonsToken;
-  const edm::EDGetTokenT<std::vector<reco::PFCandidate>> pfcandsToken;
   const edm::EDGetTokenT<std::vector<reco::Track>> tracksToken;
+  const edm::EDGetTokenT<std::vector<reco::Vertex>> primVertexToken;
   const edm::EDGetTokenT<std::vector<reco::Track>> tracksRerecoToken;
 
   MonitorElement* trackPixelLayers_;
@@ -81,17 +81,6 @@ private:
   MonitorElement* trackChi2ndofLowPt_;
   MonitorElement* trackChi2ndofMedPt_;
   MonitorElement* trackChi2ndofHigPt_;
-
-  MonitorElement* trackDzAllPt_;
-  MonitorElement* trackDzLowPt_;
-  MonitorElement* trackDzMedPt_;
-  MonitorElement* trackDzHigPt_;
-
-  MonitorElement* muontrackDxyAllPt_;
-  MonitorElement* trackDxyAllPt_;
-  MonitorElement* trackDxyLowPt_;
-  MonitorElement* trackDxyMedPt_;
-  MonitorElement* trackDxyHigPt_;
 
 };
 #endif

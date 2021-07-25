@@ -32,7 +32,6 @@ for i in range(len(options.inputFiles)):
 process.source = cms.Source("PoolSource",
   secondaryFileNames = cms.untracked.vstring(),
   fileNames = cms.untracked.vstring(
-#    'file:/afs/cern.ch/work/b/borzari/CMSSW_10_2_7/src/TrackingResolution/TrackingResolution/reRECO_OUTPUT_FILE_NAME.root'
     filenames
   )
 )
@@ -81,9 +80,13 @@ process.trackingResolution3 = DQMEDAnalyzer("TrackingResolution",
     lowPtRegionInput      = cms.untracked.double(15.0),
     medPtRegionInput      = cms.untracked.double(30.0),
     higPtRegionInput      = cms.untracked.double(100.0),
+    maxDxyInput      = cms.untracked.double(0.2),
+    maxDzInput      = cms.untracked.double(0.1),
+    maxDrInput      = cms.untracked.double(0.01),
+    minNumberOfLayersInput      = cms.untracked.int32(10),
     muonsInputTag     = cms.untracked.InputTag("muons", "", "RECO"),
-    pfcandsInputTag     = cms.untracked.InputTag("particleFlow", "", "RECO"),
     tracksInputTag     = cms.untracked.InputTag("rCluster3", "", "HITREMOVER"),
+    primVertexInputTag = cms.untracked.InputTag("offlinePrimaryVertices", "", "RECO"),
     tracksRerecoInputTag     = cms.untracked.InputTag("generalTracks3", "", "reRECO")
 )
 
