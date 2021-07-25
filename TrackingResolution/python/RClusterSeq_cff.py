@@ -27,8 +27,3 @@ for suf in range(3, 9):
     RClusterTask.add(vars()[moduleLabel])
 
 RClusterSeq = cms.Sequence(goodMuons, RClusterTask)
-
-x = process.dumpPython()
-f = open("dumped.py","w")
-f.write(x)
-f.close()
