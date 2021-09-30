@@ -19,4 +19,4 @@ A way to more easily add modules into the re-recontruction step is work in progr
   - Number of hits in reconstructed tracks (after selection) is a bit different from the number of hits provided in the dataset to be reconstructed. Compare reco hits with hits from dataset
 
 **Improvements**
-  - Instead of clonning the relevant paths to reconstruct tracks, pass only the hits to the InitialStep and usa the same other modules for reco
+  - Instead of clonning the relevant paths to reconstruct tracks, pass only the hits to the InitialStep and use the same other modules for reconstruction, Faster and more reliable (?)
