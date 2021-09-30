@@ -13,3 +13,10 @@ To produce the histograms, there are a few steps needed. Inside the `TrackingRes
 Tests are being made to run the procedure in **CMSSW_12_0_0_pre3**. Even though it is possible to execute the tracks shortening, re-reconstruction and validation using the RelValZMM file from **CMSSW_10_2_5**, when trying to use files from **CMSSW_12_0_0_pre3**, it accuses that some modules are missing when they are defined into the task to be executed.
 
 A way to more easily add modules into the re-recontruction step is work in progress so far.
+
+**Necessary checks**
+  - Why the number of reconstructed tracks (before selection) is extremely higher than the number of good tracks to reconstruct? See where and how this tracks appear in the detector
+  - Number of hits in reconstructed tracks (after selection) is a bit different from the number of hits provided in the dataset to be reconstructed. Compare reco hits with hits from dataset
+
+**Improvements**
+  - Instead of clonning the relevant paths to reconstruct tracks, pass only the hits to the InitialStep and usa the same other modules for reco
