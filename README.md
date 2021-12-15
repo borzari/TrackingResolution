@@ -3,6 +3,7 @@
 This a repository compiling all the tracking pT resolution work. Please, use **CMSSW 10_2_7** for the tests, which is the version that works so far.
 
 To produce the histograms, there are a few steps needed. Inside the `TrackingResolution/TrackingResolution/` folder you should
+  - Compile the modules `scram b -j 8`
   - Amputate the tracks
      - this is performed by the command `cmsRun python/ClusterSurgeon.py outputFile=OUTPUT_FILE_NAME.root` (the input files for this step are ZMM RelVal samples, so far)
   - Run the reRECO file: `cmsRun python/reRECO_new.py inputFiles=file:OUTPUT_FILE_NAME.root outputFileName=reRECO_OUTPUT_FILE_NAME.root`
