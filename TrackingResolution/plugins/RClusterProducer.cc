@@ -136,6 +136,7 @@ RClusterProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
   using namespace edm;
   
   // register input collections:
+
   Handle<reco::TrackCollection> tracks;
   iEvent.getByToken(tracksToken, tracks);
    
@@ -158,6 +159,9 @@ RClusterProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
   std::unique_ptr <edmNew::DetSetVector<SiPixelCluster>> outPixel (new edmNew::DetSetVector<SiPixelCluster>);
   std::unique_ptr <reco::TrackCollection> goodTracks(new reco::TrackCollection);
 
+  std::vector<int> outStripsVec;
+  std::vector<int> outPixelsVec;
+
   // Preselection of long quality tracks
    
   std::vector<reco::Track> selTracks;
@@ -165,13 +169,17 @@ RClusterProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
   unsigned int tMuon = 0;
   Double_t fitProb = 100;
   unsigned int candidates = 0;
-	
+
+  int ntracks = 0;
+
   for( const auto& track : *tracks){
-		
+	
+    ntracks = ntracks + 1;
+	
     reco::HitPattern hitpattern = track.hitPattern();
     bool passedMinNumberLayers = false;
     bool isMatched = false;
-    Double_t  dRmin = 10;
+    Double_t dRmin = 10;
     Double_t chiNdof = track.normalizedChi2();
     Double_t dxy = std::abs(track.dxy(vtx.position()));
     Double_t dz = std::abs(track.dz(vtx.position()));
@@ -197,8 +205,8 @@ RClusterProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
     // do vertex consistency:
     bool vertex_match = dxy < maxDxy && dz < maxDz;
     if (!(vertex_match)) continue;
-    if (!(track.validFraction()==1)) continue;
-    if (passedMinNumberLayers&&isMatched){
+    if (track.validFraction()<1.0) continue;
+    if (passedMinNumberLayers && isMatched){
       candidates ++;
       // only save the track with the smallest chiNdof
       if (chiNdof < fitProb){
@@ -212,13 +220,19 @@ RClusterProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
   }
 
   selTracks.push_back(bestTrack);
-	
+
+  //std::cout << layersRemaining << " hits: Event " << iEvent.id() << " has " << ntracks << " tracks." << std::endl;	
   if (debug) std::cout << " number of Tracker Muons: " << tMuon << ", thereof " << selTracks.size() << " tracks passed preselection." << std::endl;
     
   // shorten preselected tracks
    
   std::set<unsigned int> stripIds;
   std::set<unsigned int> pixelIds;
+
+  std::set<unsigned int> stripIdsTokeep;
+  std::set<unsigned int> pixelIdsTokeep;
+
+  bool hitIsNotValid = false;
 
   int tracksCounter = 0; 
   for( const auto& track : selTracks){
@@ -229,13 +243,35 @@ RClusterProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
     uint32_t thisSubStruct;
     uint32_t prevSubStruct;
     unsigned int sequLayers = 0;
-    int pxbLayers =0;
-    int pxfLayers =0;
-    int tibLayers =0;
-    int tidLayers =0;
-    int tobLayers =0;
-    int tecLayers =0;
+    int pxbLayers = 0;
+    int pxfLayers = 0;
+    int tibLayers = 0;
+    int tidLayers = 0;
+    int tobLayers = 0;
+    int tecLayers = 0;
+    int notValidLayers = 0;
     tracksCounter ++;
+
+    try{ // (Un)Comment this line with /* to (not) allow for events with not valid hits
+      auto hb = track.recHitsBegin();
+
+      for(unsigned int h=0;h<track.recHitsSize();h++){
+
+        auto recHit = *(hb+h);
+        auto const & hit = *recHit;
+
+        if (onlyValidHits && !hit.isValid()){
+          hitIsNotValid = true;
+          continue;
+        }
+      }
+    }
+    catch(...){
+      if(debug) std::cout << "de-referenced track extra" << std::endl;
+    }
+
+    if(hitIsNotValid==true) break; // (Un)Comment this line with */ to (not) allow for events with not valid hits
+
     try{
       auto hb = track.recHitsBegin();
 
@@ -304,6 +340,7 @@ RClusterProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 	
         if (onlyValidHits && !hit.isValid()){
           if(debug) std::cout<< "hit not valid: " << h <<std::endl;
+          ++notValidLayers; // Comment this line to not skip the not valid hits in tracks -> will reconstruct many tracks with less layers than layersRemaining
           continue;
         }
 				
@@ -315,18 +352,31 @@ RClusterProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
           if(debug) std::cout<< "hit not valid: " << h <<std::endl;
           continue;
         }
-        if (debug) std::cout << "thisLayer : " << thisLayer << " prevLayer: " << prevLayer << " hit layer nr.:" << sequLayers << std::endl;					
+        if (debug) std::cout << "thisLayer : " << thisLayer << " prevLayer: " << prevLayer << " hit layer nr.:" << sequLayers << std::endl;
+
+        // build lists of IDs to keep
+        if (sequLayers <= layersRemaining + notValidLayers) {
+
+          if (rcluster.isStrip()){
+            stripIdsTokeep.insert(rawId);
+          }
+
+          if (rcluster.isPixel()){
+            pixelIdsTokeep.insert(rawId);
+          }
+        }
 
         // build lists of IDs to remove
-        if (sequLayers > layersRemaining) {
+        if (sequLayers > layersRemaining + notValidLayers) {
 								
-          if (rcluster.isStrip()){	
+          if (rcluster.isStrip()){
+            	
             if (std::find(stripIds.begin(), stripIds.end(), rawId) != stripIds.end()){
               if(debug) std::cout << "STRIP hit: " << h << " Id already in set: " << rawId << std::endl;
               continue;
             }							
             else {
-              stripIds.insert(rawId); // ids to remove								
+              stripIds.insert(rawId); // ids to remove
             }
           }
 						
@@ -347,10 +397,12 @@ RClusterProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
       std::cout << "de-referenced track extra" << std::endl;
     }       
   }
-	
+
   if(debug) std::cout << "pixel Ids to remove: " << pixelIds.size() << " strip Ids to be removed: " << stripIds.size() << std::endl;
 	
   for(unsigned int h=0;h<((oldStripCluster.product())->size());h++){
+
+    if(hitIsNotValid==true) break; // (Un)Comment this line to (not) allow for events with not valid hits
 		
     unsigned int id = (oldStripCluster.product()->id(h));
     auto pos = ((oldStripCluster.product())->find(id)) - ((oldStripCluster.product())->begin());
@@ -361,15 +413,22 @@ RClusterProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
       // found raw Id in list of Ids to remove
     }
     else {
-      // if raw ID not in list, save strip cluster
-      outStrips->insert(id,datatype,sizetype);
-      if(debug &&(h%1000==0)) std::cout << " STRIP cluster: " << h << " inserted " << id << " , " << pos << " , " << sizetype << " to set with all ids, positions, sizes." << std::endl;
+      // if raw ID not in list and is Tokeep, save strip cluster
+      if (std::find(stripIdsTokeep.begin(), stripIdsTokeep.end(), id) != stripIdsTokeep.end()){  // (Un)Comment this line with // to (not) save all clusters except the to be removed ones
+
+        outStrips->insert(id,datatype,sizetype);
+        outStripsVec.push_back(1);
+        if(debug &&(h%1000==0)) std::cout << " STRIP cluster: " << h << " inserted " << id << " , " << pos << " , " << sizetype << " to set with all ids, positions, sizes." << std::endl;
+
+      }  // (Un)Comment this line with // to (not) save all clusters except the to be removed ones
 
     }
 		
   }	
 
   for(unsigned int h=0;h<((oldPixelCluster.product())->size());h++){
+
+    if(hitIsNotValid==true) break; // (Un)Comment this line to (not) allow for events with not valid hits
 		
     unsigned int id = (oldPixelCluster.product()->id(h));
     auto pos = ((oldPixelCluster.product())->find(id)) - ((oldPixelCluster.product())->begin());
@@ -380,18 +439,27 @@ RClusterProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
       // found raw Id in list of Ids to remove
     }
     else {
-      // if raw ID not in list, save pixel cluster
-      outPixel->insert(id,datatype,sizetype);
-      if(debug && (h%100==0)) std::cout << " PIXEL cluster: " << h << " inserted " << id << " , " << pos << " , " << sizetype << " to set with all ids, positions, sizes." << std::endl;
+      // if raw ID not in list and is Tokeep, save pixel cluster
+      if (std::find(pixelIdsTokeep.begin(), pixelIdsTokeep.end(), id) != pixelIdsTokeep.end()){  // (Un)Comment this line with // to (not) save all clusters except the to be removed ones
+
+        outPixel->insert(id,datatype,sizetype);
+        outPixelsVec.push_back(1);
+        if(debug && (h%100==0)) std::cout << " PIXEL cluster: " << h << " inserted " << id << " , " << pos << " , " << sizetype << " to set with all ids, positions, sizes." << std::endl;
+
+      }  // (Un)Comment this line with // to (not) save all clusters except the to be removed ones
+
     }
 		
   }									
-							
+
+  //std::cout << "The total number of clusters in this track is: " << outStripsVec.size() + outPixelsVec.size() << "." << std::endl;
  
   // save track collection in event and remaining pixel/strip clusters:
   iEvent.put(std::move(outStrips), "");
   iEvent.put(std::move(outPixel), "");
   iEvent.put(std::move(goodTracks), "");
+
+  //if(layersRemaining == 8) std::cout << "====================================================================================" << std::endl;
 
 }
 
