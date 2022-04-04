@@ -82,7 +82,7 @@ process.RAWoutput = cms.OutputModule("PoolOutputModule",
         dataTier = cms.untracked.string('GEN-SIM-RECO'),
         filterName = cms.untracked.string('')
     ),
-    fileName = cms.untracked.string('file:'+options.outputFile),
+    fileName = cms.untracked.string('file:RECO_'+options.outputFile),
     outputCommands = process.RAWEventContent.outputCommands+[
         'keep *_*_bunchSpacing_*',
         'keep *_*generalTracks*_*_RECO',

@@ -10,8 +10,17 @@ process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1))
 process.options  = cms.untracked.PSet( wantSummary = cms.untracked.bool(True),
                                        SkipEvent = cms.untracked.vstring('ProductNotFound') )
 
+filenames = []
+
+for i in range(len(options.inputFiles)):
+    filenames.append('file:RECO_'+options.inputFiles[i]+'.root')
+
+# Input source
 process.source = cms.Source("PoolSource",
-  fileNames = cms.untracked.vstring(options.inputFiles)
+  secondaryFileNames = cms.untracked.vstring(),
+  fileNames = cms.untracked.vstring(
+    filenames
+  )
 )
 
 process.load('Configuration.StandardSequences.Services_cff')
@@ -36,7 +45,7 @@ process.out = cms.OutputModule("PoolOutputModule",
         dataTier = cms.untracked.string('GEN-SIM-RECO'),
         filterName = cms.untracked.string('')
     ),
-    fileName = cms.untracked.string('file:'+options.outputFile),
+    fileName = cms.untracked.string('file:shortened_'+options.outputFile),
     outputCommands = cms.untracked.vstring(
         'keep *',
         ),

@@ -3,6 +3,13 @@ import FWCore.ParameterSet.Config as cms
 from FWCore.ParameterSet.VarParsing import VarParsing
 
 options = VarParsing('analysis')
+
+options.register ('layersThreshold',
+                  3, # default value
+                  VarParsing.multiplicity.singleton, # singleton or list
+                  VarParsing.varType.int,          # string, int, or float
+                  "Number of threshold layers (from 3 to 8 so far)")
+
 options.parseArguments()
 
 process = cms.Process('HARVESTING')
@@ -25,7 +32,7 @@ process.maxEvents = cms.untracked.PSet(
 filenames = []
 
 for i in range(len(options.inputFiles)):
-    filenames.append("file:"+options.inputFiles[i])
+    filenames.append('file:DQM_'+str(options.layersThreshold)+'layers_'+options.inputFiles[i])
 
 # Input source
 process.source = cms.Source("PoolSource",

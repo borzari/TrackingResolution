@@ -39,10 +39,17 @@ process.maxEvents = cms.untracked.PSet(
     output = cms.optional.untracked.allowed(cms.int32,cms.PSet)
 )
 
+filenames = []
+
+for i in range(len(options.inputFiles)):
+    filenames.append('file:shortened_'+options.inputFiles[i]+'.root')
+
 # Input source
 process.source = cms.Source("PoolSource",
-    fileNames = cms.untracked.vstring(options.inputFiles),
-    secondaryFileNames = cms.untracked.vstring()
+  secondaryFileNames = cms.untracked.vstring(),
+  fileNames = cms.untracked.vstring(
+    filenames
+  )
 )
 
 process.options = cms.untracked.PSet(
@@ -195,7 +202,7 @@ process.RECOSIMoutput = cms.OutputModule("PoolOutputModule",
         dataTier = cms.untracked.string('GEN-SIM-RECO'),
         filterName = cms.untracked.string('')
     ),
-    fileName = cms.untracked.string('file:'+options.outputFile+'_'+str(options.layersThreshold)+'layers.root'),
+    fileName = cms.untracked.string('file:reRECO_'+str(options.layersThreshold)+'layers_'+options.outputFile),
     outputCommands = cms.untracked.vstring( (
     'drop *',
     'keep reco*_*_*_HITREMOVER',
