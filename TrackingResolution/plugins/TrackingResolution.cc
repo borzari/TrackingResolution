@@ -199,7 +199,6 @@ void TrackingResolution::analyze(edm::Event const& iEvent, edm::EventSetup const
   }
 
 }
-void TrackingResolution::endLuminosityBlock(edm::LuminosityBlock const& lumiBlock, edm::EventSetup const& eSetup){}
 // Define this as a plug-in
 #include "FWCore/Framework/interface/MakerMacros.h"
 DEFINE_FWK_MODULE(TrackingResolution);
