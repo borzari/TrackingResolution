@@ -32,7 +32,7 @@ process.maxEvents = cms.untracked.PSet(
 
 filenames = []
 
-for i in range(len(options.inputFiles)):
+for i in range(1):
     filenames.append('file:reRECO_'+str(options.layersThreshold)+'layers_'+options.inputFiles[i]+'.root')
 
 # Input source
@@ -73,13 +73,13 @@ from Configuration.AlCa.GlobalTag import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase1_2021_realistic', '')
 
 process.load("FWCore.MessageLogger.MessageLogger_cfi")
-process.MessageLogger.cerr.FwkReport.reportEvery = 1
+process.MessageLogger.cerr.FwkReport.reportEvery = 1000
 
 # Tracker Data MC validation suite
-process.trackingResolution3 = DQMEDAnalyzer("TrackingResolution",
+process.trackingResolution = DQMEDAnalyzer("TrackingResolution",
     moduleName        = cms.untracked.string("testTrackingResolution"),
     folderName        = cms.untracked.string("TrackRefitting"),
-    hitsRemainInput        = cms.untracked.string("3"),
+    hitsRemainInput        = cms.untracked.string("0"),
     minTracksEtaInput      = cms.untracked.double(0.0),
     maxTracksEtaInput      = cms.untracked.double(2.2),
     minTracksPtInput      = cms.untracked.double(15.0),
@@ -94,48 +94,47 @@ process.trackingResolution3 = DQMEDAnalyzer("TrackingResolution",
     muonsInputTag     = cms.untracked.InputTag("muons", "", "RECO"),
     tracksInputTag     = cms.untracked.InputTag("rCluster3", "", "HITREMOVER"),
     primVertexInputTag = cms.untracked.InputTag("offlinePrimaryVertices", "", "RECO"),
-#    tracksRerecoInputTag     = cms.untracked.InputTag("generalTracks3", "", "reRECO")
     tracksRerecoInputTag     = cms.untracked.InputTag("generalTracks", "", "reRECO")
 )
 
+process.trackingResolution3 = process.trackingResolution.clone()
+process.trackingResolution3.tracksInputTag=cms.untracked.InputTag("rCluster3", "", "HITREMOVER")
+process.trackingResolution3.tracksRerecoInputTag=cms.untracked.InputTag("generalTracks3", "", "reRECO")
+process.trackingResolution3.hitsRemainInput=cms.untracked.string("3")
+
 process.trackingResolution4 = process.trackingResolution3.clone()
 process.trackingResolution4.tracksInputTag=cms.untracked.InputTag("rCluster4", "", "HITREMOVER")
-#process.trackingResolution4.tracksRerecoInputTag=cms.untracked.InputTag("generalTracks4", "", "reRECO")
+process.trackingResolution4.tracksRerecoInputTag=cms.untracked.InputTag("generalTracks4", "", "reRECO")
 process.trackingResolution4.hitsRemainInput=cms.untracked.string("4")
-#
+
 process.trackingResolution5 = process.trackingResolution3.clone()
 process.trackingResolution5.tracksInputTag=cms.untracked.InputTag("rCluster5", "", "HITREMOVER")
-#process.trackingResolution5.tracksRerecoInputTag=cms.untracked.InputTag("generalTracks5", "", "reRECO")
+process.trackingResolution5.tracksRerecoInputTag=cms.untracked.InputTag("generalTracks5", "", "reRECO")
 process.trackingResolution5.hitsRemainInput=cms.untracked.string("5")
-#
+
 process.trackingResolution6 = process.trackingResolution3.clone()
 process.trackingResolution6.tracksInputTag=cms.untracked.InputTag("rCluster6", "", "HITREMOVER")
-#process.trackingResolution6.tracksRerecoInputTag=cms.untracked.InputTag("generalTracks6", "", "reRECO")
+process.trackingResolution6.tracksRerecoInputTag=cms.untracked.InputTag("generalTracks6", "", "reRECO")
 process.trackingResolution6.hitsRemainInput=cms.untracked.string("6")
-#
+
 process.trackingResolution7 = process.trackingResolution3.clone()
 process.trackingResolution7.tracksInputTag=cms.untracked.InputTag("rCluster7", "", "HITREMOVER")
-#process.trackingResolution7.tracksRerecoInputTag=cms.untracked.InputTag("generalTracks7", "", "reRECO")
+process.trackingResolution7.tracksRerecoInputTag=cms.untracked.InputTag("generalTracks7", "", "reRECO")
 process.trackingResolution7.hitsRemainInput=cms.untracked.string("7")
-#
+
 process.trackingResolution8 = process.trackingResolution3.clone()
 process.trackingResolution8.tracksInputTag=cms.untracked.InputTag("rCluster8", "", "HITREMOVER")
-#process.trackingResolution8.tracksRerecoInputTag=cms.untracked.InputTag("generalTracks8", "", "reRECO")
+process.trackingResolution8.tracksRerecoInputTag=cms.untracked.InputTag("generalTracks8", "", "reRECO")
 process.trackingResolution8.hitsRemainInput=cms.untracked.string("8")
 
 # Path and EndPath definitions
-if options.layersThreshold==3:
-  process.analysis_step = cms.Path(process.trackingResolution3)
-if options.layersThreshold==4:
-  process.analysis_step = cms.Path(process.trackingResolution4)
-if options.layersThreshold==5:
-  process.analysis_step = cms.Path(process.trackingResolution5)
-if options.layersThreshold==6:
-  process.analysis_step = cms.Path(process.trackingResolution6)
-if options.layersThreshold==7:
-  process.analysis_step = cms.Path(process.trackingResolution7)
-if options.layersThreshold==8:
-  process.analysis_step = cms.Path(process.trackingResolution8)
+if options.layersThreshold==3: process.analysis_step = cms.Path(process.trackingResolution*process.trackingResolution3)
+if options.layersThreshold==4: process.analysis_step = cms.Path(process.trackingResolution*process.trackingResolution4)
+if options.layersThreshold==5: process.analysis_step = cms.Path(process.trackingResolution*process.trackingResolution5)
+if options.layersThreshold==6: process.analysis_step = cms.Path(process.trackingResolution*process.trackingResolution6)
+if options.layersThreshold==7: process.analysis_step = cms.Path(process.trackingResolution*process.trackingResolution7)
+if options.layersThreshold==8: process.analysis_step = cms.Path(process.trackingResolution*process.trackingResolution8)
+if options.layersThreshold<3 or options.layersThreshold>8: process.analysis_step = cms.Path(process.trackingResolution*process.trackingResolution3*process.trackingResolution4*process.trackingResolution5*process.trackingResolution6*process.trackingResolution7*process.trackingResolution8)
 process.endjob_step = cms.EndPath(process.endOfProcess)
 process.DQMoutput_step = cms.EndPath(process.DQMoutput)
 

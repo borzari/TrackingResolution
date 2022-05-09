@@ -8,12 +8,12 @@ To produce the histograms, there are a few steps needed. Inside the `TrackingRes
      - `cmsRun python/RECO.py outputFile=OUTPUT_FILE_NAME`
   - Shorten the tracks
      - `cmsRun python/ClusterSurgeon.py inputFiles=OUTPUT_FILE_NAME outputFile=OUTPUT_FILE_NAME`
-  - Run the re-reconstruction
-     - `cmsRun python/reRECO.py inputFiles=OUTPUT_FILE_NAME outputFile=OUTPUT_FILE_NAME layersThreshold=3`
+  - Run the re-reconstruction (there is no layersThreshold value equal to 9, but setting it to 9 makes every number of layers from 3 to 8; setting layersThreshold between 3 and 8 generates each given value -> good for debbuging)
+     - `cmsRun python/reRECO.py inputFiles=OUTPUT_FILE_NAME outputFile=OUTPUT_FILE_NAME layersThreshold=9`
   - Run the DQM
-     - `cmsRun test/Tracker_DataMCValidation_cfg.py inputFiles=OUTPUT_FILE_NAME outputFile=OUTPUT_FILE_NAME layersThreshold=3`
+     - `cmsRun test/Tracker_DataMCValidation_cfg.py inputFiles=OUTPUT_FILE_NAME outputFile=OUTPUT_FILE_NAME layersThreshold=9`
   - Run the Harvest
-     - `cmsRun test/Tracker_DataMCValidation_Harvest_cfg.py inputFiles=OUTPUT_FILE_NAME layersThreshold=3`
+     - `cmsRun test/Tracker_DataMCValidation_Harvest_cfg.py inputFiles=OUTPUT_FILE_NAME layersThreshold=9`
 The output file with the histograms will be named something similar to `DQM_V0001_R000000001__Global__CMSSW_X_Y_Z__RECO.root`
 
 **Necessary checks**

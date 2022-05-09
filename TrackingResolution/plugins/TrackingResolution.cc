@@ -3,6 +3,9 @@
 #include "TMath.h"
 #include "TLorentzVector.h"
 
+#include <iostream>
+#include <string>
+
 #include "FWCore/Utilities/interface/InputTag.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "DataFormats/Common/interface/Handle.h"
@@ -75,15 +78,17 @@ void TrackingResolution::bookHistograms(DQMStore::IBooker &iBook, edm::Run const
   trackPixelLayers_ = iBook.book1D("trackPixelLayers"+hitsRemain+"l", "Pixel layers with measurement - "+hitsRemain+" layers",11,-0.5,10.5);
   trackTrackerLayers_ = iBook.book1D("trackTrackerLayers"+hitsRemain+"l", "Tracker layers with measurement - "+hitsRemain+" layers",11,-0.5,10.5);
 
-  trackPtAllPt_ = iBook.book1D("trackPt"+hitsRemain+"lAllPt", "Track p_{T} - "+hitsRemain+" layers",40,0.0,2.0);
-  trackPtLowPt_ = iBook.book1D("trackPt"+hitsRemain+"lLowPt", "Track p_{T} - "+hitsRemain+" layers",40,0.0,2.0);
-  trackPtMedPt_ = iBook.book1D("trackPt"+hitsRemain+"lMedPt", "Track p_{T} - "+hitsRemain+" layers",40,0.0,2.0);
-  trackPtHigPt_ = iBook.book1D("trackPt"+hitsRemain+"lHigPt", "Track p_{T} - "+hitsRemain+" layers",40,0.0,2.0);
+  trackPtAllPt_ = iBook.book1D("trackPt"+hitsRemain+"lAllPt", "Track p_{T} - "+hitsRemain+" layers",41,0.0,2.0);
+  trackPtLowPt_ = iBook.book1D("trackPt"+hitsRemain+"lLowPt", "Track p_{T} - "+hitsRemain+" layers",41,0.0,2.0);
+  trackPtMedPt_ = iBook.book1D("trackPt"+hitsRemain+"lMedPt", "Track p_{T} - "+hitsRemain+" layers",41,0.0,2.0);
+  trackPtHigPt_ = iBook.book1D("trackPt"+hitsRemain+"lHigPt", "Track p_{T} - "+hitsRemain+" layers",41,0.0,2.0);
 
   trackChi2ndofAllPt_ = iBook.book1D("trackChi2ndof"+hitsRemain+"lAllPt", "Chi^{2} / ndof - "+hitsRemain+" layers",40,0.0,2.0);
   trackChi2ndofLowPt_ = iBook.book1D("trackChi2ndof"+hitsRemain+"lLowPt", "Chi^{2} / ndof - "+hitsRemain+" layers",40,0.0,2.0);
   trackChi2ndofMedPt_ = iBook.book1D("trackChi2ndof"+hitsRemain+"lMedPt", "Chi^{2} / ndof - "+hitsRemain+" layers",40,0.0,2.0);
   trackChi2ndofHigPt_ = iBook.book1D("trackChi2ndof"+hitsRemain+"lHigPt", "Chi^{2} / ndof - "+hitsRemain+" layers",40,0.0,2.0);
+
+  trackEfficiencyCalc_ = iBook.book1D("trackEfficiencyCalc"+hitsRemain+"l", "Number of shortened matched and full tracks - "+hitsRemain+" layers",4,-0.5,3.5);
 
 }
 void TrackingResolution::analyze(edm::Event const& iEvent, edm::EventSetup const& iSetup) {
@@ -99,6 +104,10 @@ void TrackingResolution::analyze(edm::Event const& iEvent, edm::EventSetup const
   iEvent.getByToken(tracksRerecoToken, tracks_rereco);
 
   const reco::Vertex vertex = vertices->at(0);
+
+  for (std::vector<reco::Track>::const_iterator track = tracks->begin(); track != tracks->end(); ++track) {
+    trackEfficiencyCalc_->Fill(0.0);
+  }
 
   for (std::vector<reco::Muon>::const_iterator muon = muons->begin(); muon != muons->end(); ++muon) {
 
@@ -135,6 +144,8 @@ void TrackingResolution::analyze(edm::Event const& iEvent, edm::EventSetup const
 
                     trackPixelLayers_->Fill(track_pixelLayersWithMeasurement);
                     trackTrackerLayers_->Fill(track_trackerLayersWithMeasurement);
+
+                    trackEfficiencyCalc_->Fill(3.0);
 
                     trackPtAllPt_->Fill(1.0*track_rereco->pt()/track->pt());
 
@@ -199,6 +210,7 @@ void TrackingResolution::analyze(edm::Event const& iEvent, edm::EventSetup const
   }
 
 }
+//void TrackingResolution::endLuminosityBlock(edm::LuminosityBlock const& lumiBlock, edm::EventSetup const& eSetup){}
 // Define this as a plug-in
 #include "FWCore/Framework/interface/MakerMacros.h"
 DEFINE_FWK_MODULE(TrackingResolution);
