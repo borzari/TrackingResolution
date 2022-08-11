@@ -1153,7 +1153,7 @@ def shortTrackModules(process, layers=3):
             MeVperADCPixel = cms.double(3.61e-06),
             MeVperADCStrip = cms.double(0.0009566500000000001),
             ProbabilityMode = cms.string('Accumulation'),
-            Reccord = cms.string('SiStripDeDxMip_3D_Rcd'),
+            Record = cms.string('SiStripDeDxMip_3D_Rcd'),
             ShapeTest = cms.bool(True),
             UseCalibration = cms.bool(False),
             UsePixel = cms.bool(False),
@@ -1174,7 +1174,8 @@ def shortTrackModules(process, layers=3):
             lowPtTracksDeDxThreshold = cms.double(3.5),
             lowPtTracksEstimatorParameters = cms.PSet(
                 exponent = cms.double(-2.0),
-                fraction = cms.double(-0.15)
+                fraction = cms.double(-0.15),
+                truncate = cms.bool(True),
             ),
             lowPtTracksPrescaleFail = cms.uint32(2000),
             lowPtTracksPrescalePass = cms.uint32(100),
@@ -1194,7 +1195,7 @@ def shortTrackModules(process, layers=3):
             MeVperADCPixel = cms.double(3.61e-06),
             MeVperADCStrip = cms.double(0.0009566500000000001),
             ProbabilityMode = cms.string('Accumulation'),
-            Reccord = cms.string('SiStripDeDxMip_3D_Rcd'),
+            Record = cms.string('SiStripDeDxMip_3D_Rcd'),
             ShapeTest = cms.bool(True),
             UseCalibration = cms.bool(False),
             UsePixel = cms.bool(True),
@@ -1212,7 +1213,7 @@ def shortTrackModules(process, layers=3):
             MeVperADCPixel = cms.double(3.61e-06),
             MeVperADCStrip = cms.double(0.0009566500000000001),
             ProbabilityMode = cms.string('Accumulation'),
-            Reccord = cms.string('SiStripDeDxMip_3D_Rcd'),
+            Record = cms.string('SiStripDeDxMip_3D_Rcd'),
             ShapeTest = cms.bool(True),
             UseCalibration = cms.bool(False),
             UsePixel = cms.bool(True),
@@ -1230,7 +1231,7 @@ def shortTrackModules(process, layers=3):
             MeVperADCPixel = cms.double(3.61e-06),
             MeVperADCStrip = cms.double(0.0009566500000000001),
             ProbabilityMode = cms.string('Accumulation'),
-            Reccord = cms.string('SiStripDeDxMip_3D_Rcd'),
+            Record = cms.string('SiStripDeDxMip_3D_Rcd'),
             ShapeTest = cms.bool(True),
             UseCalibration = cms.bool(False),
             UsePixel = cms.bool(False),
@@ -3667,6 +3668,7 @@ def shortTrackModules(process, layers=3):
                 'MkFitClusterIndexToHit_mkFitSiStripHits'+str(layers)+'__reRECO',
                 'floats_mkFitSiStripHits'+str(layers)+'__reRECO'
             ),
+            beamspot = cms.InputTag("offlineBeamSpot"+str(layers)),
             mkFitEventOfHits = cms.InputTag("mkFitEventOfHits"+str(layers)),
             mkFitPixelHits = cms.InputTag("mkFitSiPixelHits"+str(layers)),
             mkFitSeeds = cms.InputTag("highPtTripletStepTrackCandidatesMkFitSeeds"+str(layers)),
@@ -3675,7 +3677,8 @@ def shortTrackModules(process, layers=3):
             propagatorOpposite = cms.ESInputTag("","PropagatorWithMaterialOpposite"),
             seeds = cms.InputTag("highPtTripletStepSeeds"+str(layers)),
             tracks = cms.InputTag("highPtTripletStepTrackCandidatesMkFit"+str(layers)),
-            ttrhBuilder = cms.ESInputTag("","WithTrackAngle")
+            ttrhBuilder = cms.ESInputTag("","WithTrackAngle"),
+            vertices = cms.InputTag("firstStepPrimaryVertices"+str(layers))
         )
     )
     
@@ -5334,6 +5337,7 @@ def shortTrackModules(process, layers=3):
                 'MkFitOutputWrapper_pixelLessStepTrackCandidatesMkFit'+str(layers)+'__reRECO',
                 'MkFitSeedWrapper_pixelLessStepTrackCandidatesMkFitSeeds'+str(layers)+'__reRECO'
             ),
+            beamspot = cms.InputTag("offlineBeamSpot"+str(layers)),
             mkFitEventOfHits = cms.InputTag("mkFitEventOfHits"+str(layers)),
             mkFitPixelHits = cms.InputTag("mkFitSiPixelHits"+str(layers)),
             mkFitSeeds = cms.InputTag("pixelLessStepTrackCandidatesMkFitSeeds"+str(layers)),
@@ -5342,7 +5346,8 @@ def shortTrackModules(process, layers=3):
             propagatorOpposite = cms.ESInputTag("","PropagatorWithMaterialOpposite"),
             seeds = cms.InputTag("pixelLessStepSeeds"+str(layers)),
             tracks = cms.InputTag("pixelLessStepTrackCandidatesMkFit"+str(layers)),
-            ttrhBuilder = cms.ESInputTag("","WithTrackAngle")
+            ttrhBuilder = cms.ESInputTag("","WithTrackAngle"),
+            vertices = cms.InputTag("firstStepPrimaryVertices"+str(layers))
         )
     )
     

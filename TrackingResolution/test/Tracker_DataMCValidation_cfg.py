@@ -59,7 +59,7 @@ process.configurationMetadata = cms.untracked.PSet(
 process.DQMoutput = cms.OutputModule("PoolOutputModule",
     splitLevel = cms.untracked.int32(0),
     outputCommands = process.DQMEventContent.outputCommands,
-    fileName = cms.untracked.string('file:DQM_'+str(options.layersThreshold)+'layers_'+options.outputFile),
+    fileName = cms.untracked.string('file:DQMMod_'+str(options.layersThreshold)+'layers_'+options.outputFile),
     dataset = cms.untracked.PSet(
         filterName = cms.untracked.string(''),
         dataTier = cms.untracked.string('')
@@ -70,13 +70,13 @@ process.DQMoutput = cms.OutputModule("PoolOutputModule",
 
 # Other statements
 from Configuration.AlCa.GlobalTag import GlobalTag
-process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase1_2021_realistic', '')
+process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase1_2022_realistic', '')
 
 process.load("FWCore.MessageLogger.MessageLogger_cfi")
 process.MessageLogger.cerr.FwkReport.reportEvery = 1000
 
 # Tracker Data MC validation suite
-process.trackingResolution = DQMEDAnalyzer("TrackingResolution",
+process.trackingResolution = DQMEDAnalyzer("TrackingResolutionMod",
     moduleName        = cms.untracked.string("testTrackingResolution"),
     folderName        = cms.untracked.string("TrackRefitting"),
     hitsRemainInput        = cms.untracked.string("0"),
@@ -134,7 +134,7 @@ if options.layersThreshold==5: process.analysis_step = cms.Path(process.tracking
 if options.layersThreshold==6: process.analysis_step = cms.Path(process.trackingResolution*process.trackingResolution6)
 if options.layersThreshold==7: process.analysis_step = cms.Path(process.trackingResolution*process.trackingResolution7)
 if options.layersThreshold==8: process.analysis_step = cms.Path(process.trackingResolution*process.trackingResolution8)
-if options.layersThreshold<3 or options.layersThreshold>8: process.analysis_step = cms.Path(process.trackingResolution*process.trackingResolution3*process.trackingResolution4*process.trackingResolution5*process.trackingResolution6*process.trackingResolution7*process.trackingResolution8)
+if options.layersThreshold<3 or options.layersThreshold>8: process.analysis_step = cms.Path(process.trackingResolution3*process.trackingResolution4*process.trackingResolution5*process.trackingResolution6*process.trackingResolution7*process.trackingResolution8)
 process.endjob_step = cms.EndPath(process.endOfProcess)
 process.DQMoutput_step = cms.EndPath(process.DQMoutput)
 

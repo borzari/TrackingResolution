@@ -102,7 +102,9 @@ process.RECOSIMoutput = cms.OutputModule("PoolOutputModule",
     'keep reco*_*_*_HITREMOVER',
     'keep reco*_offlinePrimaryVertices__RECO',
     'keep recoMuons_muons_*_RECO',
-    'keep recoTracks_generalTracks*_*_reRECO',
+#    'keep recoTracks_generalTracks*_*_reRECO',
+    'keep *_generalTracks*_*_RECO',
+    'keep *_generalTracks*_*_reRECO',
          ) ),
     splitLevel = cms.untracked.int32(0)
 )
@@ -111,7 +113,7 @@ process.RECOSIMoutput = cms.OutputModule("PoolOutputModule",
 
 # Other statements
 from Configuration.AlCa.GlobalTag import GlobalTag
-process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase1_2021_realistic', '')
+process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase1_2022_realistic', '')
 
 #############################################################################################
 
@@ -286,6 +288,8 @@ process.reconstruction_step8 = cms.Path(process.reconstruction_trackingOnly_8lay
 process.endjob_step = cms.EndPath(process.endOfProcess)
 process.RECOSIMoutput_step = cms.EndPath(process.RECOSIMoutput)
 
+#print(process.reconstruction_step3)
+
 # Schedule definition
 if options.layersThreshold==3: process.schedule = cms.Schedule(process.raw2digi_step,process.reconstruction_step,process.reconstruction_step3,process.endjob_step,process.RECOSIMoutput_step)
 if options.layersThreshold==4: process.schedule = cms.Schedule(process.raw2digi_step,process.reconstruction_step,process.reconstruction_step4,process.endjob_step,process.RECOSIMoutput_step)
@@ -293,7 +297,6 @@ if options.layersThreshold==5: process.schedule = cms.Schedule(process.raw2digi_
 if options.layersThreshold==6: process.schedule = cms.Schedule(process.raw2digi_step,process.reconstruction_step,process.reconstruction_step6,process.endjob_step,process.RECOSIMoutput_step)
 if options.layersThreshold==7: process.schedule = cms.Schedule(process.raw2digi_step,process.reconstruction_step,process.reconstruction_step7,process.endjob_step,process.RECOSIMoutput_step)
 if options.layersThreshold==8: process.schedule = cms.Schedule(process.raw2digi_step,process.reconstruction_step,process.reconstruction_step8,process.endjob_step,process.RECOSIMoutput_step)
-#if options.layersThreshold<3 or options.layersThreshold>8: process.schedule = cms.Schedule(process.raw2digi_step,process.reconstruction_step,process.reconstruction_step3,process.reconstruction_step4,process.reconstruction_step5,process.reconstruction_step6,process.reconstruction_step7,process.reconstruction_step8,process.endjob_step,process.RECOSIMoutput_step)
 if options.layersThreshold<3 or options.layersThreshold>8: process.schedule = cms.Schedule(process.raw2digi_step,process.reconstruction_step3,process.reconstruction_step4,process.reconstruction_step5,process.reconstruction_step6,process.reconstruction_step7,process.reconstruction_step8,process.endjob_step,process.RECOSIMoutput_step)
 
 from PhysicsTools.PatAlgos.tools.helpers import associatePatAlgosToolsTask
