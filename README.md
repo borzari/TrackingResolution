@@ -24,6 +24,3 @@ The output file with the histograms will be named something similar to `DQM_V000
 
 **Improvements**
   - Instead of clonning the relevant paths to reconstruct tracks, pass only the hits to the InitialStep and use the same other modules for reconstruction, faster and more reliable (?)
-  - Perform the reRECO using `cmsDriver.py` cfg files
-     - Doing it with CMSSW_12_3_0_pre5
-     - Need to make the reRECO step with all tracks (for every layersThreshold) at once
