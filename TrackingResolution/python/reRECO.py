@@ -35,8 +35,7 @@ process.load('Configuration.StandardSequences.EndOfProcess_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(-1),
-#    input = cms.untracked.int32(1000),
+    input = cms.untracked.int32(10),
     output = cms.optional.untracked.allowed(cms.int32,cms.PSet)
 )
 
@@ -102,9 +101,9 @@ process.RECOSIMoutput = cms.OutputModule("PoolOutputModule",
     'keep reco*_*_*_HITREMOVER',
     'keep reco*_offlinePrimaryVertices__RECO',
     'keep recoMuons_muons_*_RECO',
-#    'keep recoTracks_generalTracks*_*_reRECO',
+    'keep recoTracks_generalTracks*_*_reRECO',
     'keep *_generalTracks*_*_RECO',
-    'keep *_generalTracks*_*_reRECO',
+#    'keep *_generalTracks*_*_reRECO',
          ) ),
     splitLevel = cms.untracked.int32(0)
 )
@@ -114,6 +113,9 @@ process.RECOSIMoutput = cms.OutputModule("PoolOutputModule",
 # Other statements
 from Configuration.AlCa.GlobalTag import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase1_2022_realistic', '')
+
+process.load("FWCore.MessageLogger.MessageLogger_cfi")
+process.MessageLogger.cerr.FwkReport.reportEvery = 1000
 
 #############################################################################################
 

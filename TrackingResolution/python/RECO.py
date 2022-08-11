@@ -27,7 +27,7 @@ process.load('Configuration.StandardSequences.EndOfProcess_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(-1),
+    input = cms.untracked.int32(10),
     output = cms.optional.untracked.allowed(cms.int32,cms.PSet)
 )
 
@@ -83,17 +83,16 @@ process.RAWoutput = cms.OutputModule("PoolOutputModule",
         filterName = cms.untracked.string('')
     ),
     fileName = cms.untracked.string('file:RECO_'+options.outputFile),
-    outputCommands = process.RAWEventContent.outputCommands+[
+    outputCommands = cms.untracked.vstring(
+        'drop *',
         'keep *_*_bunchSpacing_*',
-        'keep *_simMuon*Digis_*_HLT',
+        'keep *_simMuon*Digis__HLT',
         'keep *_*generalTracks*_*_RECO',
         'keep recoMuons_muons_*_RECO',
-        'keep *_offlinePrimaryVertices*_*_RECO',
-        'keep *_si*Clusters_*_RECO'
-    ],
-    #outputCommands = cms.untracked.vstring(
-    #    'keep *',
-    #),
+        'keep reco*_offlinePrimaryVertices*_*_RECO',
+        'keep *_si*Clusters_*_RECO',
+        'keep *_rawDataCollector_*_HLT'
+    ),
     splitLevel = cms.untracked.int32(0)
 )
 
@@ -102,6 +101,9 @@ process.RAWoutput = cms.OutputModule("PoolOutputModule",
 # Other statements
 from Configuration.AlCa.GlobalTag import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase1_2022_realistic', '')
+
+process.load("FWCore.MessageLogger.MessageLogger_cfi")
+process.MessageLogger.cerr.FwkReport.reportEvery = 1000
 
 # Path and EndPath definitions
 process.raw2digi_step = cms.Path(process.RawToDigi)
@@ -113,6 +115,11 @@ process.RAWoutput_step = cms.EndPath(process.RAWoutput)
 process.schedule = cms.Schedule(process.raw2digi_step,process.reconstruction_step,process.endjob_step,process.RAWoutput_step)
 from PhysicsTools.PatAlgos.tools.helpers import associatePatAlgosToolsTask
 associatePatAlgosToolsTask(process)
+
+process.options.numberOfThreads = 8
+process.options.numberOfStreams = 0
+process.options.numberOfConcurrentLuminosityBlocks = 2
+process.options.eventSetup.numberOfConcurrentIOVs = 1
 
 # customisation of the process.
 

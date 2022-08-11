@@ -6,7 +6,7 @@ options.parseArguments()
 
 process = cms.Process("HITREMOVER")
 process.load("FWCore.MessageService.MessageLogger_cfi")
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1))
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(10))
 process.options  = cms.untracked.PSet( wantSummary = cms.untracked.bool(True),
                                        SkipEvent = cms.untracked.vstring('ProductNotFound') )
 
@@ -39,6 +39,14 @@ process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 from Configuration.AlCa.GlobalTag import GlobalTag
 
 process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase1_2022_realistic', '')
+
+process.load("FWCore.MessageLogger.MessageLogger_cfi")
+process.MessageLogger.cerr.FwkReport.reportEvery = 1000
+
+process.options.numberOfThreads = 8
+process.options.numberOfStreams = 0
+process.options.numberOfConcurrentLuminosityBlocks = 2
+process.options.eventSetup.numberOfConcurrentIOVs = 1
 
 process.out = cms.OutputModule("PoolOutputModule",
     dataset = cms.untracked.PSet(

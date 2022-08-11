@@ -59,7 +59,7 @@ process.configurationMetadata = cms.untracked.PSet(
 process.DQMoutput = cms.OutputModule("PoolOutputModule",
     splitLevel = cms.untracked.int32(0),
     outputCommands = process.DQMEventContent.outputCommands,
-    fileName = cms.untracked.string('file:DQMMod_'+str(options.layersThreshold)+'layers_'+options.outputFile),
+    fileName = cms.untracked.string('file:DQM_'+str(options.layersThreshold)+'layers_'+options.outputFile),
     dataset = cms.untracked.PSet(
         filterName = cms.untracked.string(''),
         dataTier = cms.untracked.string('')
@@ -76,7 +76,7 @@ process.load("FWCore.MessageLogger.MessageLogger_cfi")
 process.MessageLogger.cerr.FwkReport.reportEvery = 1000
 
 # Tracker Data MC validation suite
-process.trackingResolution = DQMEDAnalyzer("TrackingResolutionMod",
+process.trackingResolution = DQMEDAnalyzer("TrackingResolution",
     moduleName        = cms.untracked.string("testTrackingResolution"),
     folderName        = cms.untracked.string("TrackRefitting"),
     hitsRemainInput        = cms.untracked.string("0"),
