@@ -34,7 +34,7 @@ process.maxEvents = cms.untracked.PSet(
 filenames = []
 
 for i in range(1):
-    #filenames.append('file:/eos/user/b/borzari/TrackingRootFile/RelValZMM_GEN_SIM_RECO.root')
+    #filenames.append('file:/eos/user/b/borzari/TrackingRootFile/RelValZMM_1260_GEN_SIM_RECO.root')
     filenames.append('/store/relval/CMSSW_12_6_0_pre3/RelValZMM_14/GEN-SIM-RECO/125X_mcRun3_2022_realistic_v3-v1/2580000/7dd1dbfc-90c2-46c9-a57e-1fa715218c26.root')
     filenames.append('/store/relval/CMSSW_12_6_0_pre3/RelValZMM_14/GEN-SIM-RECO/125X_mcRun3_2022_realistic_v3-v1/2580000/ac18f277-3b03-4b5d-b3d7-e81fb1608715.root')
 
@@ -121,32 +121,26 @@ process.TrackerTrackHitFilter.TrackAngleCut= 0.35 # in rads, starting from the m
 process.TrackerTrackHitFilter.usePixelQualityFlag= True
 
 process.TrackerTrackHitFilter3 = process.TrackerTrackHitFilter.clone()
-#process.TrackerTrackHitFilter3.src = 'TrackRefitter3'
 process.TrackerTrackHitFilter3.minimumHits = 3
 process.TrackerTrackHitFilter3.commands = cms.vstring("keep PXB","keep PXE","drop TIB","drop TID","drop TOB","drop TEC")
 
 process.TrackerTrackHitFilter4 = process.TrackerTrackHitFilter.clone()
-#process.TrackerTrackHitFilter4.src = 'TrackRefitter3'
 process.TrackerTrackHitFilter4.minimumHits = 4
 process.TrackerTrackHitFilter4.commands = cms.vstring("keep PXB","keep PXE","keep TIB","keep TID","drop TOB","drop TEC")
 
 process.TrackerTrackHitFilter5 = process.TrackerTrackHitFilter.clone()
-#process.TrackerTrackHitFilter5.src = 'TrackRefitter3'
 process.TrackerTrackHitFilter5.minimumHits = 5
 process.TrackerTrackHitFilter5.commands = cms.vstring("keep PXB","keep PXE","keep TIB","keep TID","drop TOB","drop TEC")
 
 process.TrackerTrackHitFilter6 = process.TrackerTrackHitFilter.clone()
-#process.TrackerTrackHitFilter6.src = 'TrackRefitter3'
 process.TrackerTrackHitFilter6.minimumHits = 6
 process.TrackerTrackHitFilter6.commands = cms.vstring("keep PXB","keep PXE","keep TIB","keep TID","drop TOB","drop TEC")
 
 process.TrackerTrackHitFilter7 = process.TrackerTrackHitFilter.clone()
-#process.TrackerTrackHitFilter7.src = 'TrackRefitter3'
 process.TrackerTrackHitFilter7.minimumHits = 7
 process.TrackerTrackHitFilter7.commands = cms.vstring("keep PXB","keep PXE","keep TIB","keep TID","drop TOB","drop TEC")
 
 process.TrackerTrackHitFilter8 = process.TrackerTrackHitFilter.clone()
-#process.TrackerTrackHitFilter8.src = 'TrackRefitter3'
 process.TrackerTrackHitFilter8.minimumHits = 8
 process.TrackerTrackHitFilter8.commands = cms.vstring("keep PXB","keep PXE","keep TIB","keep TID","drop TOB","drop TEC")
 
@@ -197,37 +191,31 @@ process.trackingResolution = DQMEDAnalyzer("TrackingResolutionAlignment",
 )
 
 process.trackingResolution3 = process.trackingResolution.clone()
-#process.trackingResolution3.tracksInputTag=cms.untracked.InputTag("rCluster3", "", "DQM")
 process.trackingResolution3.tracksInputTag=cms.untracked.InputTag("rCluster", "", "DQM")
 process.trackingResolution3.tracksRerecoInputTag=cms.untracked.InputTag("HitFilteredTracks3", "", "DQM")
 process.trackingResolution3.hitsRemainInput=cms.untracked.string("3")
 
 process.trackingResolution4 = process.trackingResolution3.clone()
-#process.trackingResolution4.tracksInputTag=cms.untracked.InputTag("rCluster4", "", "DQM")
 process.trackingResolution4.tracksInputTag=cms.untracked.InputTag("rCluster", "", "DQM")
 process.trackingResolution4.tracksRerecoInputTag=cms.untracked.InputTag("HitFilteredTracks4", "", "DQM")
 process.trackingResolution4.hitsRemainInput=cms.untracked.string("4")
 
 process.trackingResolution5 = process.trackingResolution3.clone()
-#process.trackingResolution5.tracksInputTag=cms.untracked.InputTag("rCluster5", "", "DQM")
 process.trackingResolution5.tracksInputTag=cms.untracked.InputTag("rCluster", "", "DQM")
 process.trackingResolution5.tracksRerecoInputTag=cms.untracked.InputTag("HitFilteredTracks5", "", "DQM")
 process.trackingResolution5.hitsRemainInput=cms.untracked.string("5")
 
 process.trackingResolution6 = process.trackingResolution3.clone()
-#process.trackingResolution6.tracksInputTag=cms.untracked.InputTag("rCluster6", "", "DQM")
 process.trackingResolution6.tracksInputTag=cms.untracked.InputTag("rCluster", "", "DQM")
 process.trackingResolution6.tracksRerecoInputTag=cms.untracked.InputTag("HitFilteredTracks6", "", "DQM")
 process.trackingResolution6.hitsRemainInput=cms.untracked.string("6")
 
 process.trackingResolution7 = process.trackingResolution3.clone()
-#process.trackingResolution7.tracksInputTag=cms.untracked.InputTag("rCluster7", "", "DQM")
 process.trackingResolution7.tracksInputTag=cms.untracked.InputTag("rCluster", "", "DQM")
 process.trackingResolution7.tracksRerecoInputTag=cms.untracked.InputTag("HitFilteredTracks7", "", "DQM")
 process.trackingResolution7.hitsRemainInput=cms.untracked.string("7")
 
 process.trackingResolution8 = process.trackingResolution3.clone()
-#process.trackingResolution8.tracksInputTag=cms.untracked.InputTag("rCluster8", "", "DQM")
 process.trackingResolution8.tracksInputTag=cms.untracked.InputTag("rCluster", "", "DQM")
 process.trackingResolution8.tracksRerecoInputTag=cms.untracked.InputTag("HitFilteredTracks8", "", "DQM")
 process.trackingResolution8.hitsRemainInput=cms.untracked.string("8")
