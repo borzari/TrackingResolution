@@ -24,7 +24,7 @@
 #include "DataFormats/MuonReco/interface/Muon.h"
 #include "DataFormats/MuonReco/interface/MuonFwd.h"
 #include "TPRegexp.h"
-#include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h" 
+#include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
 #include "Geometry/CommonDetUnit/interface/GluedGeomDet.h"
 #include "Geometry/TrackerGeometryBuilder/interface/TrackerGeometry.h"
 #include "DataFormats/TrackerRecHit2D/interface/BaseTrackerRecHit.h"
@@ -47,7 +47,6 @@
 //--- for SimHit association
 #include "SimDataFormats/TrackingHit/interface/PSimHit.h"
 #include "SimDataFormats/TrackingHit/interface/PSimHitContainer.h"
-#include "SimTracker/TrackerHitAssociation/interface/TrackerHitAssociator.h"
 #include "Geometry/CommonTopologies/interface/PixelTopology.h"
 #include "Geometry/CommonDetUnit/interface/PixelGeomDetUnit.h"
 #include "Geometry/CommonDetUnit/interface/GeomDetType.h"
@@ -73,7 +72,6 @@
 // -----------------------------
 TrackingResolutionMod::TrackingResolutionMod(const edm::ParameterSet& ps):
   parameters_(ps),
-  trackerHitAssociatorConfig_(ps, consumesCollector()),
   moduleName_(parameters_.getUntrackedParameter<std::string>("moduleName", "TrackingResolution")),
   folderName_(parameters_.getUntrackedParameter<std::string>("folderName", "TrackRefitting")),
   hitsRemain(parameters_.getUntrackedParameter<std::string>("hitsRemainInput", "3")),
@@ -165,12 +163,6 @@ void TrackingResolutionMod::analyze(edm::Event const& iEvent, edm::EventSetup co
 
   std::ofstream outdata;
 
-  evt = iEvent.id().event();
-  float mindist = 999999.9;
-  LocalError error;
-  LocalPoint position;
-  TrackerHitAssociator associate(iEvent, trackerHitAssociatorConfig_);
- 
   outdata.open("general_info.dat", std::ios::app); // opens the file
   if( !outdata ) { // file couldn't be opened
     std::cerr << "Error: file could not be opened" << std::endl;
@@ -179,7 +171,7 @@ void TrackingResolutionMod::analyze(edm::Event const& iEvent, edm::EventSetup co
 
   //edm::Handle< std::vector<reco::Muon> > muons;
   edm::Handle< std::vector<reco::Track> > tracks;
-  edm::Handle< std::vector<reco::Vertex> > vertices; 
+  edm::Handle< std::vector<reco::Vertex> > vertices;
   edm::Handle< std::vector<reco::Track> > tracks_rereco;
   edm::Handle< edmNew::DetSetVector<SiPixelRecHit> > siPixelRecHits;
 
@@ -285,7 +277,7 @@ void TrackingResolutionMod::analyze(edm::Event const& iEvent, edm::EventSetup co
                     int selTrack_lost = selTrack_hitpattern.numberOfLostTrackerHits(reco::HitPattern::TRACK_HITS);
                     int selTrack_lostIn = selTrack_hitpattern.numberOfLostTrackerHits(reco::HitPattern::MISSING_INNER_HITS);
                     int selTrack_lostOut = selTrack_hitpattern.numberOfLostTrackerHits(reco::HitPattern::MISSING_OUTER_HITS);
-                
+
                     const Int_t trackAlgoNum = track_rereco->algo();
                     if(track_trackerLayersWithMeasurement == hitsRemain_int) {trackAlgo_->Fill(trackAlgoNum);}
                     else {trackAlgoOnlyMiss_->Fill(trackAlgoNum);}
@@ -317,90 +309,8 @@ void TrackingResolutionMod::analyze(edm::Event const& iEvent, edm::EventSetup co
 
                     try{
 
-                      // rechits residual calculated differently -------------------------------------------------------------------------------------------------------
-                     
-                      for (trackingRecHit_iterator it = track->recHitsBegin(); it != track->recHitsEnd(); it++) {
-                        const TrackingRecHit& thit = **it;
-                        const SiPixelRecHit* matchedhit = dynamic_cast<const SiPixelRecHit*>(&thit);
-              
-                        if (matchedhit) {
-              
-                          rechitx = -9999.9;
-                          rechity = -9999.9;
-                          rechitresx = -9999.9;
-                          rechitresy = -9999.9;
-                          rechitpullx = -9999.9;
-                          rechitpully = -9999.9;
-              
-                          simhitx = -9999.9;
-                          simhity = -9999.9;
-             
-                          position = (*it)->localPosition();
-                          error = (*it)->localPositionError();
- 
-                          rechitx = position.x();
-                          rechity = position.y();
-              
-                          matched.clear();
-                          matched = associate.associateHit(*matchedhit);
-              
-                          if (!matched.empty()) {
-                            mindist = 999999.9;
-                            float distx, disty, dist;
-                            bool found_hit_from_generated_particle = false;
-              
-                            int n_assoc_muon = 0;
-              
-                            std::vector<PSimHit>::const_iterator closestit = matched.begin();
-                            for (std::vector<PSimHit>::const_iterator m = matched.begin(); m < matched.end(); m++) {
-                              if (checkType_) {
-                                int pid = (*m).particleType();
-                                if (abs(pid) != genType_) continue;
-                              }
-              
-                              float simhitx = 0.5 * ((*m).entryPoint().x() + (*m).exitPoint().x());
-                              float simhity = 0.5 * ((*m).entryPoint().y() + (*m).exitPoint().y());
-              
-                              distx = fabs(rechitx - simhitx);
-                              disty = fabs(rechity - simhity);
-                              dist = sqrt(distx * distx + disty * disty);
-              
-                              if (dist < mindist) {
-                                n_assoc_muon++;
-              
-                                mindist = dist;
-                                closestit = m;
-                                found_hit_from_generated_particle = true;
-                              }
-                            }
-              
-                            if (checkType_ && !found_hit_from_generated_particle)
-                              continue;
-              
-                            if (n_assoc_muon > 1) {
-                              edm::LogWarning("SiPixelTrackingRecHitsValid")
-                                  << " ----- This is not good: n_assoc_muon = " << n_assoc_muon;
-                              edm::LogWarning("SiPixelTrackingRecHitsValid") << "evt = " << evt;
-                            }
-              
-                            simhitx = 0.5 * ((*closestit).entryPoint().x() + (*closestit).exitPoint().x());
-                            simhity = 0.5 * ((*closestit).entryPoint().y() + (*closestit).exitPoint().y());
-              
-                            rechitresx = rechitx - simhitx;
-                            rechitresy = rechity - simhity;
-                            rechitpullx = (rechitx - simhitx) / sqrt(error.xx());
-                            rechitpully = (rechity - simhity) / sqrt(error.yy()); 
-
-                          }
-
-                        }
-
-                      }
-
-                      // -----------------------------------------------------------------------------------------------------------------------------------------------
-
                       auto hb = track_rereco->recHitsBegin();
-                      auto sel_hb = track->recHitsBegin();                 
+                      auto sel_hb = track->recHitsBegin();
 
                       uint32_t thisLayer;
                       uint32_t prevLayer;
@@ -425,14 +335,14 @@ void TrackingResolutionMod::analyze(edm::Event const& iEvent, edm::EventSetup co
                       int sel_tobLayers = 0;
                       int sel_tecLayers = 0;
                       int sel_sequLayers = 0;
- 
+
                       for(unsigned int h=0;h<track_rereco->recHitsSize();h++){
 
                         uint32_t pHit = hitpattern.getHitPattern(reco::HitPattern::TRACK_HITS, h);
-                        uint32_t nHit = hitpattern.getHitPattern(reco::HitPattern::TRACK_HITS, h-1);		          
+                        uint32_t nHit = hitpattern.getHitPattern(reco::HitPattern::TRACK_HITS, h-1);
                         auto recHit = *(hb+h);
                         auto const & hit = *recHit;
-	               
+
                         // define a sequence of hit layers:
                         thisLayer =  hitpattern.getLayer(pHit);
                         prevLayer =  hitpattern.getLayer(nHit);
@@ -458,15 +368,15 @@ void TrackingResolutionMod::analyze(edm::Event const& iEvent, edm::EventSetup co
                         if (hitpattern.getSubStructure(pHit)==6 && !((thisLayer==prevLayer)&&(thisSubStruct==prevSubStruct))){
                           tecLayers ++;
                         }
-                        
+
                         sequLayers = pxbLayers+pxfLayers+tibLayers+tidLayers+tobLayers+tecLayers;
                         //std::cout << "Short -- " <<  sequLayers << " : " << pxbLayers << " "<< pxfLayers << " "<< tibLayers << " "<< tidLayers << " "<< tobLayers << " "<< tecLayers <<std::endl;
- 
+
                         if (!hit.isValid()){
                           outdata<< "hit.isValid == False: " << h <<std::endl;
                           continue;
                         }
-		      	                  
+
                         if (!(hitpattern.validHitFilter(pHit))){
                           outdata<< "hitpattern.validHitFilter == False: " << h <<std::endl;
                           continue;
@@ -501,7 +411,7 @@ void TrackingResolutionMod::analyze(edm::Event const& iEvent, edm::EventSetup co
                           uint32_t sel_nHit = selTrack_hitpattern.getHitPattern(reco::HitPattern::TRACK_HITS, sel_h-1);
                           auto sel_recHit = *(sel_hb+sel_h);
                           auto const & sel_hit = *sel_recHit;
- 
+
                           // define a sequence of hit layers:
                           sel_thisLayer =  selTrack_hitpattern.getLayer(sel_pHit);
                           sel_prevLayer =  selTrack_hitpattern.getLayer(sel_nHit);
@@ -527,7 +437,7 @@ void TrackingResolutionMod::analyze(edm::Event const& iEvent, edm::EventSetup co
                           if (selTrack_hitpattern.getSubStructure(sel_pHit)==6 && !((sel_thisLayer==sel_prevLayer)&&(sel_thisSubStruct==sel_prevSubStruct))){
                             sel_tecLayers ++;
                           }
-  
+
                           sel_sequLayers = sel_pxbLayers+sel_pxfLayers+sel_tibLayers+sel_tidLayers+sel_tobLayers+sel_tecLayers;
 
                           if (!sel_hit.isValid()){
@@ -565,7 +475,7 @@ void TrackingResolutionMod::analyze(edm::Event const& iEvent, edm::EventSetup co
 
                               longx_lastShortLayerGood.push_back(residualx_hit);
                               longy_lastShortLayerGood.push_back(residualy_hit);
-                              
+
                               //std::cout << "LongGood -- hitsRemain: " << hitsRemain_int << " -- shortTrackerLayersWithMeasurement: " << track_trackerLayersWithMeasurement << " -- sel_sequLayers: " << sel_sequLayers << " -- hit residuals: " << residualx_hit << " " << residualy_hit << std::endl;
 
                             }
@@ -592,7 +502,7 @@ void TrackingResolutionMod::analyze(edm::Event const& iEvent, edm::EventSetup co
                             trackHitResidual_->Fill(min_dist);
                             shortTrackHitResidual_->Fill(short_min_res);
                           }
-  
+
                           std::vector<double> min_reslong;
                           for(std::vector<double>::size_type hl = 0; hl < longx_lastShortLayer.size(); ++hl){
                             //double reslong = sqrt((pow((longx_lastShortLayer[hl]),2.0))+(pow((longy_lastShortLayer[hl]),2.0)));
@@ -602,7 +512,7 @@ void TrackingResolutionMod::analyze(edm::Event const& iEvent, edm::EventSetup co
                           double long_min_res = *min_element(min_reslong.begin(), min_reslong.end());
                           longTrackHitResidual_->Fill(long_min_res);
                           //longGoodTrackHitResidual_->Fill(long_min_res);
-  
+
                         }
 
                         else{
@@ -618,7 +528,7 @@ void TrackingResolutionMod::analyze(edm::Event const& iEvent, edm::EventSetup co
 
                         }
 
-                      //} 
+                      //}
 
                     }
 
@@ -698,7 +608,7 @@ void TrackingResolutionMod::analyze(edm::Event const& iEvent, edm::EventSetup co
 
                     if(hitsRemain_int==8) outdata << "=================================================================================================" << std::endl;
                     //if(hitsRemain_int==8) std::cout << "=================================================================================================" << std::endl;
- 
+
                     outdata.close();
 
                   }
