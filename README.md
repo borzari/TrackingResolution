@@ -1,26 +1,16 @@
 # Tracking Resolution
 
-This a repository compiling all the tracking pT resolution work. Please, use **CMSSW 12_5_0_pre2** for the tests. Every step is performed for each value of layer threshold (from 3 to 8)
+This a repository compiling all the tracking pT resolution work. Please, use **CMSSW 12_6_0_pre3** for the tests. Every step is performed for each value of layer threshold (from 3 to 8)
 
-To produce the histograms, there are a few steps needed. Inside the `TrackingResolution/TrackingResolution/` folder you should
+To produce the histograms, there is only few steps needed. Inside the `TrackingResolution/TrackingResolution/` folder you should
   - Compile the modules `scram b -j 8`
-  - Get/change the input files (RelVal ZMM examples for now)
-     - `cmsRun python/RECO.py outputFile=OUTPUT_FILE_NAME`
-  - Shorten the tracks
-     - `cmsRun python/ClusterSurgeon.py inputFiles=OUTPUT_FILE_NAME outputFile=OUTPUT_FILE_NAME`
-  - Run the re-reconstruction (there is no layersThreshold value equal to 9, but setting it to 9 makes every number of layers from 3 to 8; setting layersThreshold between 3 and 8 generates each given value -> good for debbuging)
-     - `cmsRun python/reRECO.py inputFiles=OUTPUT_FILE_NAME outputFile=OUTPUT_FILE_NAME layersThreshold=9`
-  - Run the DQM
-     - `cmsRun test/Tracker_DataMCValidation_cfg.py inputFiles=OUTPUT_FILE_NAME outputFile=OUTPUT_FILE_NAME layersThreshold=9`
-  - Run the Harvest
-     - `cmsRun test/Tracker_DataMCValidation_Harvest_cfg.py inputFiles=OUTPUT_FILE_NAME layersThreshold=9`
-The output file with the histograms will be named something similar to `DQM_V0001_R000000001__Global__CMSSW_X_Y_Z__RECO.root`
+  - Execute the DQM and the Harvest step in one command with
+     - `python test/runAllAlignment.py --step=DQM,Harvest --layersThreshold=0`
+The output file with the histograms will be named something that is defined in `test/runAllAlignment.py`. The default is `Harvest_Alignment_+layersThreshold+layers.root` if layersThreshold is in between 3 and 8, and `Harvest_Alignment_allLayers.root`. Running with layersThreshold in between 3 and 8 is good for debugging purposes.
 
 **Necessary checks**
-  - Why the number of reconstructed tracks (before selection) is extremely higher than the number of good tracks to reconstruct? See where and how this tracks appear in the detector
-     - Answer: the `ClusterSurgeon.py` script was only removing the extra clusters of the shortened track, and saving everything else, providing a lot of tracks with more hits than the number of layers of threshold
-  - Number of hits in reconstructed tracks (after selection) is a bit different from the number of hits provided in the dataset to be reconstructed. Compare reco hits with hits from dataset
-     - Answer: for more hits than layers threshold, the answer is above; for less hits than layers threshold I still don't have an answer.
+  - Number of layers in shortened tracks (after selection) is a bit different from the number of layers asked for.
+     - Answer: the module **TrackerTrackHitFilter** doesn't have a very fine control about the number of layers with measurement to remain in the refitted track. Need to check what is the better option here.
 
 **Improvements**
-  - Instead of clonning the relevant paths to reconstruct tracks, pass only the hits to the InitialStep and use the same other modules for reconstruction, faster and more reliable (?)
+  - Only performing track recHits selection and refitting after, event throughput is much higher, around 75 ev/s
