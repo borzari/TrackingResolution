@@ -1,7 +1,7 @@
 # Auto generated configuration file
-# using: 
-# Revision: 1.19 
-# Source: /local/reps/CMSSW/CMSSW/Configuration/Applications/python/ConfigBuilder.py,v 
+# using:
+# Revision: 1.19
+# Source: /local/reps/CMSSW/CMSSW/Configuration/Applications/python/ConfigBuilder.py,v
 # with command line options: step3 --conditions auto:phase1_2021_realistic --datatier GEN-SIM-RECO --era Run3 --eventcontent RECOSIM --filein file:SHORT_OUTPUT_FILE_NAME.root --fileout file:reRECO_OUTPUT_FILE_NAME.root --geometry DB:Extended --no_exec --number -1 --python_filename reRECO.py --step RAW2DIGI,RECO --customise Configuration/DataProcessing/Utils.addMonitoring
 import FWCore.ParameterSet.Config as cms
 
@@ -21,6 +21,16 @@ from Configuration.Eras.Era_Run3_cff import Run3
 
 process = cms.Process('reRECO',Run3)
 
+# Comment lines above and use lines below if want to reRECO with Run2-like BDT ===========
+
+#from Configuration.Eras.Era_Run3_noMkFit_cff import Run3_noMkFit
+#from Configuration.ProcessModifiers.trackdnn_CKF_cff import trackdnn_CKF
+#from Configuration.ProcessModifiers.trackdnn_cff import trackdnn
+
+#process = cms.Process('reRECO',Run3_noMkFit.copyAndExclude([trackdnn, trackdnn_CKF]))
+
+# ========================================================================================
+
 # import of standard configurations
 process.load('Configuration.StandardSequences.Services_cff')
 process.load('SimGeneral.HepPDTESSource.pythiapdt_cfi')
@@ -35,14 +45,15 @@ process.load('Configuration.StandardSequences.EndOfProcess_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(10),
+    input = cms.untracked.int32(-1),
     output = cms.optional.untracked.allowed(cms.int32,cms.PSet)
 )
 
 filenames = []
 
 for i in range(len(options.inputFiles)):
-    filenames.append('file:shortened_'+options.inputFiles[i]+'.root')
+#    filenames.append('file:shortened_'+options.inputFiles[i]+'.root')
+    filenames.append('file:/eos/user/b/borzari/TrackingRootFile/definitive_RECO_'+options.inputFiles[i]+'.root')
 
 # Input source
 process.source = cms.Source("PoolSource",
@@ -95,15 +106,19 @@ process.RECOSIMoutput = cms.OutputModule("PoolOutputModule",
         dataTier = cms.untracked.string('GEN-SIM-RECO'),
         filterName = cms.untracked.string('')
     ),
-    fileName = cms.untracked.string('file:reRECO_'+str(options.layersThreshold)+'layers_'+options.outputFile),
+    fileName = cms.untracked.string('file:/eos/user/b/borzari/TrackingRootFile/test_usualReRECO_definitive_allRECO_reRECO_'+str(options.layersThreshold)+'layers_'+options.outputFile),
     outputCommands = cms.untracked.vstring( (
     'drop *',
     'keep reco*_*_*_HITREMOVER',
     'keep reco*_offlinePrimaryVertices__RECO',
     'keep recoMuons_muons_*_RECO',
-    'keep recoTracks_generalTracks*_*_reRECO',
+    #'keep *_*_*_RECO', # this is for allInOne file
+    #'keep recoTracks_generalTracks*_*_reRECO', # this is for allInOne file
     'keep *_generalTracks*_*_RECO',
-#    'keep *_generalTracks*_*_reRECO',
+    'keep *_generalTracks*_*_reRECO',
+    'keep recoTrack*_*_*_RECO',
+    'keep recoTrack*_*_*_reRECO',
+    'keep *RecHit*_*_*_reRECO',
          ) ),
     splitLevel = cms.untracked.int32(0)
 )
@@ -199,22 +214,22 @@ process.detachedTripletStepSeedClusterMask.stripClusters = cms.InputTag(myCollec
 process.globalMixedSeeds.ClusterCheckPSet.ClusterCollectionLabel = cms.InputTag(myCollection)
 process.globalMixedSeeds.ClusterCheckPSet.PixelClusterCollectionLabel = cms.InputTag(myCollection)
 
-process.globalPixelLessSeeds.ClusterCheckPSet.ClusterCollectionLabel = cms.InputTag(myCollection) 
+process.globalPixelLessSeeds.ClusterCheckPSet.ClusterCollectionLabel = cms.InputTag(myCollection)
 process.globalPixelLessSeeds.ClusterCheckPSet.PixelClusterCollectionLabel = cms.InputTag(myCollection)
 
-process.globalPixelSeeds.ClusterCheckPSet.ClusterCollectionLabel = cms.InputTag(myCollection) 
+process.globalPixelSeeds.ClusterCheckPSet.ClusterCollectionLabel = cms.InputTag(myCollection)
 process.globalPixelSeeds.ClusterCheckPSet.PixelClusterCollectionLabel = cms.InputTag(myCollection)
 
-process.globalSeedsFromPairsWithVertices.ClusterCheckPSet.ClusterCollectionLabel = cms.InputTag(myCollection) 
+process.globalSeedsFromPairsWithVertices.ClusterCheckPSet.ClusterCollectionLabel = cms.InputTag(myCollection)
 process.globalSeedsFromPairsWithVertices.ClusterCheckPSet.PixelClusterCollectionLabel = cms.InputTag(myCollection)
 process.globalSeedsFromPairsWithVertices.RegionFactoryPSet.RegionPSet.pixelClustersForScaling = cms.InputTag(myCollection)
 
-process.globalSeedsFromTriplets.ClusterCheckPSet.ClusterCollectionLabel = cms.InputTag(myCollection) 
+process.globalSeedsFromTriplets.ClusterCheckPSet.ClusterCollectionLabel = cms.InputTag(myCollection)
 process.globalSeedsFromTriplets.ClusterCheckPSet.PixelClusterCollectionLabel = cms.InputTag(myCollection)
 
 process.globalTrackingRegionWithVertices.RegionPSet.pixelClustersForScaling = cms.InputTag(myCollection)
 
-process.highPtTripletStepSeedClusterMask.pixelClusters = cms.InputTag(myCollection) 
+process.highPtTripletStepSeedClusterMask.pixelClusters = cms.InputTag(myCollection)
 process.highPtTripletStepSeedClusterMask.stripClusters = cms.InputTag(myCollection)
 
 process.mixedTripletStepSeedClusterMask.pixelClusters = cms.InputTag(myCollection)
@@ -226,7 +241,7 @@ process.photonConvTrajSeedFromQuadruplets.ClusterCheckPSet.ClusterCollectionLabe
 process.photonConvTrajSeedFromSingleLeg.ClusterCheckPSet.PixelClusterCollectionLabel = cms.InputTag(myCollection)
 process.photonConvTrajSeedFromSingleLeg.ClusterCheckPSet.ClusterCollectionLabel = cms.InputTag(myCollection)
 
-process.pixelClusterTagInfos.pixelhit = cms.InputTag(myCollection) 
+process.pixelClusterTagInfos.pixelhit = cms.InputTag(myCollection)
 
 process.pixelLessStepSeedClusterMask.pixelClusters = cms.InputTag(myCollection)
 process.pixelLessStepSeedClusterMask.stripClusters = cms.InputTag(myCollection)
@@ -235,10 +250,10 @@ process.pixelPairElectronTrackingRegions.RegionPSet.pixelClustersForScaling = cm
 
 process.pixelPairStepTrackingRegions.RegionPSet.pixelClustersForScaling = cms.InputTag(myCollection)
 
-process.regionalCosmicTrackerSeeds.ClusterCheckPSet.ClusterCollectionLabel = cms.InputTag(myCollection) 
+process.regionalCosmicTrackerSeeds.ClusterCheckPSet.ClusterCollectionLabel = cms.InputTag(myCollection)
 process.regionalCosmicTrackerSeeds.ClusterCheckPSet.PixelClusterCollectionLabel = cms.InputTag(myCollection)
 
-process.seedClusterRemover.pixelClusters = cms.InputTag(myCollection) 
+process.seedClusterRemover.pixelClusters = cms.InputTag(myCollection)
 process.seedClusterRemover.stripClusters = cms.InputTag(myCollection)
 
 process.seedClusterRemoverPhase2.pixelClusters = cms.InputTag(myCollection)
@@ -258,6 +273,10 @@ process.tripletElectronClusterMask.pixelClusters = cms.InputTag(myCollection)
 process.tripletElectronClusterMask.stripClusters = cms.InputTag(myCollection)
 
 #############################################################################################
+
+# Uncomment following lines and change ShortTrack to remove muon steps from reRECO ##########
+#process.reconstruction_trackingOnly.remove(process.standalonemuontrackingTask)
+#process.reconstruction_trackingOnly.remove(process.muonSeededStepTask)
 
 process.reconstruction_trackingOnly_3layers = process.reconstruction_trackingOnly.copy()
 process.reconstruction_trackingOnly_4layers = process.reconstruction_trackingOnly.copy()
@@ -293,26 +312,34 @@ process.RECOSIMoutput_step = cms.EndPath(process.RECOSIMoutput)
 #print(process.reconstruction_step3)
 
 # Schedule definition
-if options.layersThreshold==3: process.schedule = cms.Schedule(process.raw2digi_step,process.reconstruction_step,process.reconstruction_step3,process.endjob_step,process.RECOSIMoutput_step)
-if options.layersThreshold==4: process.schedule = cms.Schedule(process.raw2digi_step,process.reconstruction_step,process.reconstruction_step4,process.endjob_step,process.RECOSIMoutput_step)
-if options.layersThreshold==5: process.schedule = cms.Schedule(process.raw2digi_step,process.reconstruction_step,process.reconstruction_step5,process.endjob_step,process.RECOSIMoutput_step)
-if options.layersThreshold==6: process.schedule = cms.Schedule(process.raw2digi_step,process.reconstruction_step,process.reconstruction_step6,process.endjob_step,process.RECOSIMoutput_step)
-if options.layersThreshold==7: process.schedule = cms.Schedule(process.raw2digi_step,process.reconstruction_step,process.reconstruction_step7,process.endjob_step,process.RECOSIMoutput_step)
-if options.layersThreshold==8: process.schedule = cms.Schedule(process.raw2digi_step,process.reconstruction_step,process.reconstruction_step8,process.endjob_step,process.RECOSIMoutput_step)
-if options.layersThreshold<3 or options.layersThreshold>8: process.schedule = cms.Schedule(process.raw2digi_step,process.reconstruction_step3,process.reconstruction_step4,process.reconstruction_step5,process.reconstruction_step6,process.reconstruction_step7,process.reconstruction_step8,process.endjob_step,process.RECOSIMoutput_step)
+# if options.layersThreshold==3: process.schedule = cms.Schedule(process.raw2digi_step,process.reconstruction_step,process.reconstruction_step3,process.endjob_step,process.RECOSIMoutput_step)
+# if options.layersThreshold==4: process.schedule = cms.Schedule(process.raw2digi_step,process.reconstruction_step,process.reconstruction_step4,process.endjob_step,process.RECOSIMoutput_step)
+# if options.layersThreshold==5: process.schedule = cms.Schedule(process.raw2digi_step,process.reconstruction_step,process.reconstruction_step5,process.endjob_step,process.RECOSIMoutput_step)
+# if options.layersThreshold==6: process.schedule = cms.Schedule(process.raw2digi_step,process.reconstruction_step,process.reconstruction_step6,process.endjob_step,process.RECOSIMoutput_step)
+# if options.layersThreshold==7: process.schedule = cms.Schedule(process.raw2digi_step,process.reconstruction_step,process.reconstruction_step7,process.endjob_step,process.RECOSIMoutput_step)
+# if options.layersThreshold==8: process.schedule = cms.Schedule(process.raw2digi_step,process.reconstruction_step,process.reconstruction_step8,process.endjob_step,process.RECOSIMoutput_step)
+
+# if options.layersThreshold==3: process.schedule = cms.Schedule(process.raw2digi_step,process.reconstruction_step3,process.endjob_step,process.RECOSIMoutput_step)
+# if options.layersThreshold==4: process.schedule = cms.Schedule(process.raw2digi_step,process.reconstruction_step4,process.endjob_step,process.RECOSIMoutput_step)
+# if options.layersThreshold==5: process.schedule = cms.Schedule(process.raw2digi_step,process.reconstruction_step5,process.endjob_step,process.RECOSIMoutput_step)
+# if options.layersThreshold==6: process.schedule = cms.Schedule(process.raw2digi_step,process.reconstruction_step6,process.endjob_step,process.RECOSIMoutput_step)
+# if options.layersThreshold==7: process.schedule = cms.Schedule(process.raw2digi_step,process.reconstruction_step7,process.endjob_step,process.RECOSIMoutput_step)
+# if options.layersThreshold==8: process.schedule = cms.Schedule(process.raw2digi_step,process.reconstruction_step8,process.endjob_step,process.RECOSIMoutput_step)
+if options.layersThreshold < 3 or options.layersThreshold > 8: process.schedule = cms.Schedule(process.raw2digi_step,process.reconstruction_step3,process.reconstruction_step4,process.reconstruction_step5,process.reconstruction_step6,process.reconstruction_step7,process.reconstruction_step8,process.endjob_step,process.RECOSIMoutput_step)
+else: process.schedule = cms.Schedule(process.raw2digi_step,process.reconstruction_step,process.endjob_step,process.RECOSIMoutput_step)
 
 from PhysicsTools.PatAlgos.tools.helpers import associatePatAlgosToolsTask
 associatePatAlgosToolsTask(process)
 
-process.options.numberOfThreads = 8
-process.options.numberOfStreams = 0
-process.options.numberOfConcurrentLuminosityBlocks = 2
-process.options.eventSetup.numberOfConcurrentIOVs = 1
+# process.options.numberOfThreads = 8
+# process.options.numberOfStreams = 0
+# process.options.numberOfConcurrentLuminosityBlocks = 2
+# process.options.eventSetup.numberOfConcurrentIOVs = 1
 
 # customisation of the process.
 
 # Automatic addition of the customisation function from Configuration.DataProcessing.Utils
-from Configuration.DataProcessing.Utils import addMonitoring 
+from Configuration.DataProcessing.Utils import addMonitoring
 
 #call to customisation function addMonitoring imported from Configuration.DataProcessing.Utils
 process = addMonitoring(process)

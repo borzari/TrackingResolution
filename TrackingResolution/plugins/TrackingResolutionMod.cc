@@ -24,7 +24,7 @@
 #include "DataFormats/MuonReco/interface/Muon.h"
 #include "DataFormats/MuonReco/interface/MuonFwd.h"
 #include "TPRegexp.h"
-#include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h" 
+#include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
 #include "Geometry/CommonDetUnit/interface/GluedGeomDet.h"
 #include "Geometry/TrackerGeometryBuilder/interface/TrackerGeometry.h"
 #include "DataFormats/TrackerRecHit2D/interface/BaseTrackerRecHit.h"
@@ -73,7 +73,7 @@
 // -----------------------------
 TrackingResolutionMod::TrackingResolutionMod(const edm::ParameterSet& ps):
   parameters_(ps),
-  trackerHitAssociatorConfig_(ps, consumesCollector()),
+  //trackerHitAssociatorConfig_(ps, consumesCollector()),
   moduleName_(parameters_.getUntrackedParameter<std::string>("moduleName", "TrackingResolution")),
   folderName_(parameters_.getUntrackedParameter<std::string>("folderName", "TrackRefitting")),
   hitsRemain(parameters_.getUntrackedParameter<std::string>("hitsRemainInput", "3")),
@@ -92,12 +92,10 @@ TrackingResolutionMod::TrackingResolutionMod(const edm::ParameterSet& ps):
   tracksTag(parameters_.getUntrackedParameter<edm::InputTag>("tracksInputTag", edm::InputTag("rCluster4", "", "HITREMOVER"))),
   primVertexTag(parameters_.getUntrackedParameter<edm::InputTag>("primVertexInputTag", edm::InputTag("offlinePrimaryVertices", "", "RECO"))),
   tracksRerecoTag(parameters_.getUntrackedParameter<edm::InputTag>("tracksRerecoInputTag", edm::InputTag("generalTracks", "", "reRECO"))),
-  siPixelRecHitsTag(parameters_.getUntrackedParameter<edm::InputTag>("siPixelRecHitsInputTag", edm::InputTag("siPixelRecHits", "", "reRECO"))),
   muonsToken(consumes<std::vector<reco::Muon>>(muonsTag)),
   tracksToken(consumes<std::vector<reco::Track>>(tracksTag)),
   primVertexToken(consumes<std::vector<reco::Vertex>>(primVertexTag)),
-  tracksRerecoToken(consumes<std::vector<reco::Track>>(tracksRerecoTag)),
-  siPixelRecHitsToken(consumes<edmNew::DetSetVector<SiPixelRecHit>>(siPixelRecHitsTag))
+  tracksRerecoToken(consumes<std::vector<reco::Track>>(tracksRerecoTag))
 {
 
   trackPtAllPt_ = nullptr;
@@ -118,10 +116,13 @@ void TrackingResolutionMod::bookHistograms(DQMStore::IBooker &iBook, edm::Run co
   iBook.setCurrentFolder(currentFolder);
 
   trackAlgo_ = iBook.book1D("shortTrackAlgos"+hitsRemain+"l", "reRECO tracks RECO algo - "+hitsRemain+" layers",30,-0.5,29.5);
+  trackAlgoBefMatch_ = iBook.book1D("shortTrackAlgosBefMatch"+hitsRemain+"l", "reRECO tracks RECO algo before matching - "+hitsRemain+" layers",30,-0.5,29.5);
   trackAlgoOnlyMiss_ = iBook.book1D("shortTrackAlgosOnlyMiss"+hitsRemain+"l", "reRECO tracks (not matching hits) RECO algo - "+hitsRemain+" layers",30,-0.5,29.5);
+  originalTrackAlgo_ = iBook.book1D("originalTrackAlgos"+hitsRemain+"l", "RECO tracks RECO algo - "+hitsRemain+" layers",30,-0.5,29.5);
 
   trackOriginalAlgo_ = iBook.book1D("shortTrackOriginalAlgos"+hitsRemain+"l", "reRECO tracks RECO original algo - "+hitsRemain+" layers",30,-0.5,29.5);
   trackOriginalAlgoOnlyMiss_ = iBook.book1D("shortTrackOriginalAlgosOnlyMiss"+hitsRemain+"l", "reRECO tracks (not matching hits) RECO original algo - "+hitsRemain+" layers",30,-0.5,29.5);
+  originalTrackOriginalAlgo_ = iBook.book1D("originalTrackOriginalAlgos"+hitsRemain+"l", "RECO tracks RECO original algo - "+hitsRemain+" layers",30,-0.5,29.5);
 
   allTracksTrackerLayers_ = iBook.book1D("allTracksTrackerLayers"+hitsRemain+"l", "Tracker layers with measurement (all reRECO tracks) - "+hitsRemain+" layers",11,-0.5,10.5);
   trackPixelLayers_ = iBook.book1D("trackPixelLayers"+hitsRemain+"l", "Pixel layers with measurement - "+hitsRemain+" layers",11,-0.5,10.5);
@@ -135,8 +136,8 @@ void TrackingResolutionMod::bookHistograms(DQMStore::IBooker &iBook, edm::Run co
   //longTrackHitResidual_ = iBook.book1D("longTrackHitResidual"+hitsRemain+"l", "Long track hit residual - "+hitsRemain+" layers",50,0.0,4.0);
   //longGoodTrackHitResidual_ = iBook.book1D("longGoodTrackHitResidual"+hitsRemain+"l", "Long track good hit residual - "+hitsRemain+" layers",50,0.0,4.0);
 
-  trackHitResidual_ = iBook.book1D("trackHitResidual"+hitsRemain+"l", "Shortened and full track hit residual distance - "+hitsRemain+" layers",50,-1.0,1.0);
-  shortTrackHitResidual_ = iBook.book1D("shortTrackHitResidual"+hitsRemain+"l", "Shortened track hit residual - "+hitsRemain+" layers",50,-1.0,1.0);
+//trackHitResidual_ = iBook.book1D("trackHitResidual"+hitsRemain+"l", "Shortened and full track hit residual distance - "+hitsRemain+" layers",50,-1.0,1.0);
+//shortTrackHitResidual_ = iBook.book1D("shortTrackHitResidual"+hitsRemain+"l", "Shortened track hit residual - "+hitsRemain+" layers",50,-1.0,1.0);
   longTrackHitResidual_ = iBook.book1D("longTrackHitResidual"+hitsRemain+"l", "Long track hit residual - "+hitsRemain+" layers",50,-1.0,1.0);
   longGoodTrackHitResidual_ = iBook.book1D("longGoodTrackHitResidual"+hitsRemain+"l", "Long track good hit residual - "+hitsRemain+" layers",50,-1.0,1.0);
 
@@ -163,43 +164,53 @@ void TrackingResolutionMod::bookHistograms(DQMStore::IBooker &iBook, edm::Run co
 }
 void TrackingResolutionMod::analyze(edm::Event const& iEvent, edm::EventSetup const& iSetup) {
 
-  std::ofstream outdata;
+  std::ofstream outdata; // general_info.dat
+  std::ofstream outdata2; // missingInnMid_lessTrackerLayers_events_"+hitsRemain+"layers.dat
+  std::ofstream outdata3; // missingInnMid_correctTrackerLayers_events_"+hitsRemain+"layers.dat
+  std::ofstream outdata4; // lessTrackerLayers_notMissingInnMid_events_"+hitsRemain+"layers.dat
 
-  evt = iEvent.id().event();
-  float mindist = 999999.9;
-  LocalError error;
-  LocalPoint position;
-  TrackerHitAssociator associate(iEvent, trackerHitAssociatorConfig_);
- 
   outdata.open("general_info.dat", std::ios::app); // opens the file
   if( !outdata ) { // file couldn't be opened
     std::cerr << "Error: file could not be opened" << std::endl;
     exit(1);
   }
 
-  //edm::Handle< std::vector<reco::Muon> > muons;
   edm::Handle< std::vector<reco::Track> > tracks;
-  edm::Handle< std::vector<reco::Vertex> > vertices; 
+  edm::Handle< std::vector<reco::Vertex> > vertices;
   edm::Handle< std::vector<reco::Track> > tracks_rereco;
-  edm::Handle< edmNew::DetSetVector<SiPixelRecHit> > siPixelRecHits;
 
-  //iEvent.getByToken(muonsToken, muons);
   iEvent.getByToken(tracksToken, tracks);
   iEvent.getByToken(primVertexToken, vertices);
   iEvent.getByToken(tracksRerecoToken, tracks_rereco);
-  iEvent.getByToken(siPixelRecHitsToken, siPixelRecHits);
 
   const reco::Vertex vertex = vertices->at(0);
 
   int ntracks = 0;
   int ntracks_rereco = 0;
-  //int nmuons = 0;
   int hitsRemain_int = stoi(hitsRemain);
+
+  outdata2.open("missingInnMid_lessTrackerLayers_events_"+hitsRemain+"layers.dat", std::ios::app); // opens the file
+  if( !outdata2 ) { // file couldn't be opened
+    std::cerr << "Error: file could not be opened" << std::endl;
+    exit(1);
+  }
+
+  outdata3.open("missingInnMid_correctTrackerLayers_events_"+hitsRemain+"layers.dat", std::ios::app); // opens the file
+  if( !outdata3 ) { // file couldn't be opened
+    std::cerr << "Error: file could not be opened" << std::endl;
+    exit(1);
+  }
+
+  outdata4.open("lessTrackerLayers_notMissingInnMid_events_"+hitsRemain+"layers.dat", std::ios::app); // opens the file
+  if( !outdata4 ) { // file couldn't be opened
+    std::cerr << "Error: file could not be opened" << std::endl;
+    exit(1);
+  }
 
   for (std::vector<reco::Track>::const_iterator track = tracks->begin(); track != tracks->end(); ++track) {
 
     ntracks = ntracks + 1;
-    //trackEfficiencyCalc_->Fill(0.0);
+
   }
 
   for (std::vector<reco::Track>::const_iterator track_rereco = tracks_rereco->begin(); track_rereco != tracks_rereco->end(); ++track_rereco) {
@@ -207,20 +218,8 @@ void TrackingResolutionMod::analyze(edm::Event const& iEvent, edm::EventSetup co
     ntracks_rereco = ntracks_rereco + 1;
     int allTracks_trackerLayersWithMeasurement = track_rereco->hitPattern().trackerLayersWithMeasurement();
     allTracksTrackerLayers_->Fill(allTracks_trackerLayersWithMeasurement);
+
   }
-
-  //for (std::vector<reco::Muon>::const_iterator muon = muons->begin(); muon != muons->end(); ++muon) {
-
-   // nmuons = nmuons + 1;
-
-  //}
-
-  //std::cout << "The number of muons, selected tracks and reRECO tracks are: " << nmuons << ", " << ntracks << " and " << ntracks_rereco << std::endl;
-
-  //for (std::vector<reco::Muon>::const_iterator muon = muons->begin(); muon != muons->end(); ++muon) {
-
-    //TLorentzVector mvec;
-    //mvec.SetPtEtaPhiM(muon->pt(),muon->eta(),muon->phi(),muon->mass());
 
     for (std::vector<reco::Track>::const_iterator track = tracks->begin(); track != tracks->end(); ++track) {
 
@@ -228,8 +227,6 @@ void TrackingResolutionMod::analyze(edm::Event const& iEvent, edm::EventSetup co
       Double_t dz = (track->dz(vertex.position()));
       TLorentzVector tvec;
       tvec.SetPtEtaPhiM(track->pt(),track->eta(),track->phi(),0.0);
-      //if(tvec.DeltaR(mvec)<maxDr){
-      //if(tvec.DeltaR(mvec)<0.01){
 
         if(track->hitPattern().trackerLayersWithMeasurement() > minNumberOfLayers){
 
@@ -253,28 +250,24 @@ void TrackingResolutionMod::analyze(edm::Event const& iEvent, edm::EventSetup co
                 std::vector<double> longy_lastShortLayerGood;
                 std::vector<double> shortx_lastShortLayer;
                 std::vector<double> shorty_lastShortLayer;
-                std::vector<PSimHit> matched;
                 bool checkHits = false;
                 TLorentzVector trerecovec;
                 trerecovec.SetPtEtaPhiM(track_rereco->pt(),track_rereco->eta(),track_rereco->phi(),0.0);
                 double deltaR = tvec.DeltaR(trerecovec);
                 trackDeltaRAllPt_->Fill(deltaR);
+                trackAlgoBefMatch_->Fill(track_rereco->algo());
                 if(deltaR < maxDr){
 
                   trackEfficiencyCalc_->Fill(3.0);
 
                   if(track_rereco->pt()>=minTracksPt && track_rereco->pt()<=maxTracksPt && abs(track_rereco->eta())>=minTracksEta && abs(track_rereco->eta())<=maxTracksEta){
 
-                    //trackEfficiencyCalc_->Fill(3.0);
-
                     int track_trackerLayersWithMeasurement = track_rereco->hitPattern().trackerLayersWithMeasurement();
                     int track_pixelLayersWithMeasurement = track_rereco->hitPattern().pixelLayersWithMeasurement();
 
-// ===========================================================================================================================================================================================
-
                     reco::HitPattern hitpattern = track_rereco->hitPattern();
                     int valid = hitpattern.numberOfValidTrackerHits();
-                    int lost = hitpattern.numberOfLostTrackerHits(reco::HitPattern::TRACK_HITS);
+                    int lostMid = hitpattern.numberOfLostTrackerHits(reco::HitPattern::TRACK_HITS);
                     int lostIn = hitpattern.numberOfLostTrackerHits(reco::HitPattern::MISSING_INNER_HITS);
                     int lostOut = hitpattern.numberOfLostTrackerHits(reco::HitPattern::MISSING_OUTER_HITS);
 
@@ -282,30 +275,31 @@ void TrackingResolutionMod::analyze(edm::Event const& iEvent, edm::EventSetup co
 
                     reco::HitPattern selTrack_hitpattern = track->hitPattern();
                     int selTrack_valid = selTrack_hitpattern.numberOfValidTrackerHits();
-                    int selTrack_lost = selTrack_hitpattern.numberOfLostTrackerHits(reco::HitPattern::TRACK_HITS);
+                    int selTrack_lostMid = selTrack_hitpattern.numberOfLostTrackerHits(reco::HitPattern::TRACK_HITS);
                     int selTrack_lostIn = selTrack_hitpattern.numberOfLostTrackerHits(reco::HitPattern::MISSING_INNER_HITS);
                     int selTrack_lostOut = selTrack_hitpattern.numberOfLostTrackerHits(reco::HitPattern::MISSING_OUTER_HITS);
-                
+
                     const Int_t trackAlgoNum = track_rereco->algo();
                     if(track_trackerLayersWithMeasurement == hitsRemain_int) {trackAlgo_->Fill(trackAlgoNum);}
                     else {trackAlgoOnlyMiss_->Fill(trackAlgoNum);}
                     const auto trackAlgo = track_rereco->algoName();
                     const auto selTrack_trackAlgo = track->algoName();
 
+                    const Int_t originalTrackAlgoNum = track->algo();
+                    originalTrackAlgo_->Fill(originalTrackAlgoNum);
+                    const Int_t originalTrackOriginalAlgoNum = track->originalAlgo();
+                    originalTrackOriginalAlgo_->Fill(originalTrackOriginalAlgoNum);
+
                     const Int_t trackOriginalAlgoNum = track_rereco->originalAlgo();
                     if(track_trackerLayersWithMeasurement == hitsRemain_int) {trackOriginalAlgo_->Fill(trackOriginalAlgoNum);}
                     else {trackOriginalAlgoOnlyMiss_->Fill(trackOriginalAlgoNum);}
 
-                    const auto selTrack_tot = selTrack_valid + selTrack_lost + selTrack_lostIn + selTrack_lostOut;
-                    const auto tot = valid + lost + lostIn + lostOut;
+                    const auto selTrack_tot = selTrack_valid + selTrack_lostMid + selTrack_lostIn + selTrack_lostOut;
+                    const auto tot = valid + lostMid + lostIn + lostOut;
 
-                    trackMissInnAllPt_->Fill(lostIn);
-                    trackMissMidAllPt_->Fill(lost);
-                    trackMissOutAllPt_->Fill(lostOut);
+                    outdata << "Long  -- LayersRemain: " << hitsRemain_int << ". Layers w/ Measurement: " << selTrack_trackerLayersWithMeasurement << ". Valid: " << selTrack_valid << ". Total: " << selTrack_tot << ". MissInn: " << selTrack_lostIn << ". MissMid: " << selTrack_lostMid << ". MissOut: " << selTrack_lostOut << ". Track algo: " << selTrack_trackAlgo << "." << std::endl;
 
-                    outdata << "Long  -- LayersRemain: " << hitsRemain_int << ". Layers w/ Measurement: " << selTrack_trackerLayersWithMeasurement << ". Valid: " << selTrack_valid << ". Total: " << selTrack_tot << ". MissInn: " << selTrack_lostIn << ". MissMid: " << selTrack_lost << ". MissOut: " << selTrack_lostOut << ". Track algo: " << selTrack_trackAlgo << "." << std::endl;
-
-                    outdata << "Short -- LayersRemain: " << hitsRemain_int << ". Layers w/ Measurement: " << track_trackerLayersWithMeasurement << ". Valid: " << valid << ". Total: " << tot << ". MissInn: " << lostIn << ". MissMid: " << lost << ". MissOut: " << lostOut << ". Track algo: " << trackAlgo << ".";
+                    outdata << "Short -- LayersRemain: " << hitsRemain_int << ". Layers w/ Measurement: " << track_trackerLayersWithMeasurement << ". Valid: " << valid << ". Total: " << tot << ". MissInn: " << lostIn << ". MissMid: " << lostMid << ". MissOut: " << lostOut << ". Track algo: " << trackAlgo << ".";
 
                     if(hitsRemain_int!=track_trackerLayersWithMeasurement){
                       outdata << " ############################" << std::endl;
@@ -315,92 +309,12 @@ void TrackingResolutionMod::analyze(edm::Event const& iEvent, edm::EventSetup co
                       outdata << std::endl;
                     }
 
+// From here until line 541 is an attempt to calculate hits residuals ===========================================================================================================================================================================================
+
                     try{
 
-                      // rechits residual calculated differently -------------------------------------------------------------------------------------------------------
-                     
-                      for (trackingRecHit_iterator it = track->recHitsBegin(); it != track->recHitsEnd(); it++) {
-                        const TrackingRecHit& thit = **it;
-                        const SiPixelRecHit* matchedhit = dynamic_cast<const SiPixelRecHit*>(&thit);
-              
-                        if (matchedhit) {
-              
-                          rechitx = -9999.9;
-                          rechity = -9999.9;
-                          rechitresx = -9999.9;
-                          rechitresy = -9999.9;
-                          rechitpullx = -9999.9;
-                          rechitpully = -9999.9;
-              
-                          simhitx = -9999.9;
-                          simhity = -9999.9;
-             
-                          position = (*it)->localPosition();
-                          error = (*it)->localPositionError();
- 
-                          rechitx = position.x();
-                          rechity = position.y();
-              
-                          matched.clear();
-                          matched = associate.associateHit(*matchedhit);
-              
-                          if (!matched.empty()) {
-                            mindist = 999999.9;
-                            float distx, disty, dist;
-                            bool found_hit_from_generated_particle = false;
-              
-                            int n_assoc_muon = 0;
-              
-                            std::vector<PSimHit>::const_iterator closestit = matched.begin();
-                            for (std::vector<PSimHit>::const_iterator m = matched.begin(); m < matched.end(); m++) {
-                              if (checkType_) {
-                                int pid = (*m).particleType();
-                                if (abs(pid) != genType_) continue;
-                              }
-              
-                              float simhitx = 0.5 * ((*m).entryPoint().x() + (*m).exitPoint().x());
-                              float simhity = 0.5 * ((*m).entryPoint().y() + (*m).exitPoint().y());
-              
-                              distx = fabs(rechitx - simhitx);
-                              disty = fabs(rechity - simhity);
-                              dist = sqrt(distx * distx + disty * disty);
-              
-                              if (dist < mindist) {
-                                n_assoc_muon++;
-              
-                                mindist = dist;
-                                closestit = m;
-                                found_hit_from_generated_particle = true;
-                              }
-                            }
-              
-                            if (checkType_ && !found_hit_from_generated_particle)
-                              continue;
-              
-                            if (n_assoc_muon > 1) {
-                              edm::LogWarning("SiPixelTrackingRecHitsValid")
-                                  << " ----- This is not good: n_assoc_muon = " << n_assoc_muon;
-                              edm::LogWarning("SiPixelTrackingRecHitsValid") << "evt = " << evt;
-                            }
-              
-                            simhitx = 0.5 * ((*closestit).entryPoint().x() + (*closestit).exitPoint().x());
-                            simhity = 0.5 * ((*closestit).entryPoint().y() + (*closestit).exitPoint().y());
-              
-                            rechitresx = rechitx - simhitx;
-                            rechitresy = rechity - simhity;
-                            rechitpullx = (rechitx - simhitx) / sqrt(error.xx());
-                            rechitpully = (rechity - simhity) / sqrt(error.yy()); 
-
-                          }
-
-                        }
-
-                      }
-
-                      // -----------------------------------------------------------------------------------------------------------------------------------------------
-
                       auto hb = track_rereco->recHitsBegin();
-                      auto sel_hb = track->recHitsBegin();                 
+                      auto sel_hb = track->recHitsBegin();
 
                       uint32_t thisLayer;
                       uint32_t prevLayer;
@@ -425,14 +339,14 @@ void TrackingResolutionMod::analyze(edm::Event const& iEvent, edm::EventSetup co
                       int sel_tobLayers = 0;
                       int sel_tecLayers = 0;
                       int sel_sequLayers = 0;
- 
+
                       for(unsigned int h=0;h<track_rereco->recHitsSize();h++){
 
                         uint32_t pHit = hitpattern.getHitPattern(reco::HitPattern::TRACK_HITS, h);
-                        uint32_t nHit = hitpattern.getHitPattern(reco::HitPattern::TRACK_HITS, h-1);		          
+                        uint32_t nHit = hitpattern.getHitPattern(reco::HitPattern::TRACK_HITS, h-1);
                         auto recHit = *(hb+h);
                         auto const & hit = *recHit;
-	               
+
                         // define a sequence of hit layers:
                         thisLayer =  hitpattern.getLayer(pHit);
                         prevLayer =  hitpattern.getLayer(nHit);
@@ -458,15 +372,15 @@ void TrackingResolutionMod::analyze(edm::Event const& iEvent, edm::EventSetup co
                         if (hitpattern.getSubStructure(pHit)==6 && !((thisLayer==prevLayer)&&(thisSubStruct==prevSubStruct))){
                           tecLayers ++;
                         }
-                        
+
                         sequLayers = pxbLayers+pxfLayers+tibLayers+tidLayers+tobLayers+tecLayers;
                         //std::cout << "Short -- " <<  sequLayers << " : " << pxbLayers << " "<< pxfLayers << " "<< tibLayers << " "<< tidLayers << " "<< tobLayers << " "<< tecLayers <<std::endl;
- 
+
                         if (!hit.isValid()){
                           outdata<< "hit.isValid == False: " << h <<std::endl;
                           continue;
                         }
-		      	                  
+
                         if (!(hitpattern.validHitFilter(pHit))){
                           outdata<< "hitpattern.validHitFilter == False: " << h <<std::endl;
                           continue;
@@ -501,7 +415,7 @@ void TrackingResolutionMod::analyze(edm::Event const& iEvent, edm::EventSetup co
                           uint32_t sel_nHit = selTrack_hitpattern.getHitPattern(reco::HitPattern::TRACK_HITS, sel_h-1);
                           auto sel_recHit = *(sel_hb+sel_h);
                           auto const & sel_hit = *sel_recHit;
- 
+
                           // define a sequence of hit layers:
                           sel_thisLayer =  selTrack_hitpattern.getLayer(sel_pHit);
                           sel_prevLayer =  selTrack_hitpattern.getLayer(sel_nHit);
@@ -527,7 +441,7 @@ void TrackingResolutionMod::analyze(edm::Event const& iEvent, edm::EventSetup co
                           if (selTrack_hitpattern.getSubStructure(sel_pHit)==6 && !((sel_thisLayer==sel_prevLayer)&&(sel_thisSubStruct==sel_prevSubStruct))){
                             sel_tecLayers ++;
                           }
-  
+
                           sel_sequLayers = sel_pxbLayers+sel_pxfLayers+sel_tibLayers+sel_tidLayers+sel_tobLayers+sel_tecLayers;
 
                           if (!sel_hit.isValid()){
@@ -565,7 +479,7 @@ void TrackingResolutionMod::analyze(edm::Event const& iEvent, edm::EventSetup co
 
                               longx_lastShortLayerGood.push_back(residualx_hit);
                               longy_lastShortLayerGood.push_back(residualy_hit);
-                              
+
                               //std::cout << "LongGood -- hitsRemain: " << hitsRemain_int << " -- shortTrackerLayersWithMeasurement: " << track_trackerLayersWithMeasurement << " -- sel_sequLayers: " << sel_sequLayers << " -- hit residuals: " << residualx_hit << " " << residualy_hit << std::endl;
 
                             }
@@ -580,19 +494,17 @@ void TrackingResolutionMod::analyze(edm::Event const& iEvent, edm::EventSetup co
                             std::vector<double> min_resdist;
                             std::vector<double> min_resshort;
                             for(std::vector<double>::size_type hl = 0; hl < longx_lastShortLayer.size(); ++hl){
-                              //double resshort = sqrt((pow((shortx_lastShortLayer[hs]),2.0))+(pow((shorty_lastShortLayer[hs]),2.0)));
-                              //double dist = sqrt((pow((shortx_lastShortLayer[hs] - longx_lastShortLayer[hl]),2.0))+(pow((shorty_lastShortLayer[hs] - longy_lastShortLayer[hl]),2.0)));
                               double resshort = shortx_lastShortLayer[hs];
                               double dist = sqrt((pow((shortx_lastShortLayer[hs] - longx_lastShortLayer[hl]),2.0)));
                               min_resdist.push_back(dist);
                               min_resshort.push_back(resshort);
                             }
-                            double min_dist = *min_element(min_resdist.begin(), min_resdist.end());
-                            double short_min_res = *min_element(min_resshort.begin(), min_resshort.end());
-                            trackHitResidual_->Fill(min_dist);
-                            shortTrackHitResidual_->Fill(short_min_res);
+                            //double min_dist = *min_element(min_resdist.begin(), min_resdist.end());
+                            //double short_min_res = *min_element(min_resshort.begin(), min_resshort.end());
+                            //trackHitResidual_->Fill(min_dist);
+                            //shortTrackHitResidual_->Fill(short_min_res);
                           }
-  
+
                           std::vector<double> min_reslong;
                           for(std::vector<double>::size_type hl = 0; hl < longx_lastShortLayer.size(); ++hl){
                             //double reslong = sqrt((pow((longx_lastShortLayer[hl]),2.0))+(pow((longy_lastShortLayer[hl]),2.0)));
@@ -602,7 +514,7 @@ void TrackingResolutionMod::analyze(edm::Event const& iEvent, edm::EventSetup co
                           double long_min_res = *min_element(min_reslong.begin(), min_reslong.end());
                           longTrackHitResidual_->Fill(long_min_res);
                           //longGoodTrackHitResidual_->Fill(long_min_res);
-  
+
                         }
 
                         else{
@@ -618,7 +530,7 @@ void TrackingResolutionMod::analyze(edm::Event const& iEvent, edm::EventSetup co
 
                         }
 
-                      //} 
+                      //}
 
                     }
 
@@ -626,13 +538,19 @@ void TrackingResolutionMod::analyze(edm::Event const& iEvent, edm::EventSetup co
                       std::cout << "de-referenced track extra" << std::endl;
                     }
 
-// ===========================================================================================================================================================================================
+// End of attempt at calculating hitResiduals ===========================================================================================================================================================================================
 
                     trackPixelLayers_->Fill(track_pixelLayersWithMeasurement);
                     trackTrackerLayers_->Fill(track_trackerLayersWithMeasurement);
                     if(track_trackerLayersWithMeasurement != hitsRemain_int) trackTrackerLayersMiss_->Fill(track_trackerLayersWithMeasurement);
 
-                    //trackEfficiencyCalc_->Fill(3.0);
+                    trackMissInnAllPt_->Fill(lostIn);
+                    trackMissMidAllPt_->Fill(lostMid);
+                    trackMissOutAllPt_->Fill(lostOut);
+
+                    if(track_trackerLayersWithMeasurement < hitsRemain_int && (lostMid != 0 || lostIn != 0)) outdata2 << iEvent.id() << std::endl; // missingInnMid_lessTrackerLayers_events_"+hitsRemain+"layers.dat
+                    if(track_trackerLayersWithMeasurement == hitsRemain_int && (lostMid != 0 || lostIn != 0)) outdata3 << iEvent.id() << std::endl; // missingInnMid_correctTrackerLayers_events_"+hitsRemain+"layers.dat
+                    if(track_trackerLayersWithMeasurement < hitsRemain_int && (lostMid == 0 && lostIn == 0)) outdata4 << iEvent.id() << std::endl; // lessTrackerLayers_notMissingInnMid_events_"+hitsRemain+"layers.dat
 
                     trackPtAllPt_->Fill(1.0*track_rereco->pt()/track->pt());
 
@@ -697,8 +615,7 @@ void TrackingResolutionMod::analyze(edm::Event const& iEvent, edm::EventSetup co
                     }
 
                     if(hitsRemain_int==8) outdata << "=================================================================================================" << std::endl;
-                    //if(hitsRemain_int==8) std::cout << "=================================================================================================" << std::endl;
- 
+
                     outdata.close();
 
                   }
@@ -713,14 +630,13 @@ void TrackingResolutionMod::analyze(edm::Event const& iEvent, edm::EventSetup co
 
         }
 
-      //}
-
     }
 
-  //}
+  outdata2.close();
+  outdata3.close();
+  outdata4.close();
 
 }
-//void TrackingResolutionMod::endLuminosityBlock(edm::LuminosityBlock const& lumiBlock, edm::EventSetup const& eSetup){}
 // Define this as a plug-in
 #include "FWCore/Framework/interface/MakerMacros.h"
 DEFINE_FWK_MODULE(TrackingResolutionMod);
