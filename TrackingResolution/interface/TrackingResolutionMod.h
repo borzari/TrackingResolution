@@ -60,21 +60,6 @@ protected:
 private:
 
   edm::ParameterSet parameters_;
-  TrackerHitAssociator::Config trackerHitAssociatorConfig_;
-  bool checkType_;
-  int genType_;
-  edm::EventNumber_t evt;
-
-  float rechitx;     // x position of hit
-  float rechity;     // y position of hit
-
-  float rechitresx;   // difference between reconstructed hit x position and 'true' x position
-  float rechitresy;   // difference between reconstructed hit y position and 'true' y position
-  float rechitpullx;  // x residual divideded by error
-  float rechitpully;  // y residual divideded by error
-
-  float simhitx;  // true x position of hit
-  float simhity;  // true y position of hit
 
   std::string moduleName_;
   std::string folderName_;
@@ -99,12 +84,10 @@ private:
   const edm::InputTag tracksTag;
   const edm::InputTag primVertexTag;
   const edm::InputTag tracksRerecoTag;
-  const edm::InputTag siPixelRecHitsTag;
   const edm::EDGetTokenT<std::vector<reco::Muon>> muonsToken;
   const edm::EDGetTokenT<std::vector<reco::Track>> tracksToken;
   const edm::EDGetTokenT<std::vector<reco::Vertex>> primVertexToken;
   const edm::EDGetTokenT<std::vector<reco::Track>> tracksRerecoToken;
-  const edm::EDGetTokenT<edmNew::DetSetVector<SiPixelRecHit>> siPixelRecHitsToken;
 
   MonitorElement* allTracksTrackerLayers_;
   MonitorElement* trackPixelLayers_;
@@ -136,9 +119,13 @@ private:
   MonitorElement* trackChi2ndofHigPt_;
 
   MonitorElement* trackAlgo_;
+  MonitorElement* trackAlgoBefMatch_;
   MonitorElement* trackAlgoOnlyMiss_;
   MonitorElement* trackOriginalAlgo_;
   MonitorElement* trackOriginalAlgoOnlyMiss_;
+
+  MonitorElement* originalTrackAlgo_;
+  MonitorElement* originalTrackOriginalAlgo_;
 
 };
 #endif
