@@ -82,6 +82,6 @@ for step in stepList:
         print("Running DQM")
         os.system("cmsRun test/Tracker_DataMCValidation_cfg.py inputFiles=OUTPUT_FILE_NAME outputFile=OUTPUT_FILE_NAME layersThreshold="+layersThreshold)
     if step == 'Harvest':
-        harvestFile = 'Harvest_test_run2LikeReRECO_definitive_allRECO_'+layersThreshold+'layers'
+        harvestFile = 'Harvest_testMod_usualReRECO_definitive_allRECO_'+layersThreshold+'layers'
         print("Harvesting histograms and saving as "+harvestFile+".root")
         os.system("cmsRun test/Tracker_DataMCValidation_Harvest_cfg.py inputFiles=OUTPUT_FILE_NAME layersThreshold="+layersThreshold+"; mv DQM_V0001_R000000001__Global__CMSSW_X_Y_Z__RECO.root "+harvestFile+".root")
