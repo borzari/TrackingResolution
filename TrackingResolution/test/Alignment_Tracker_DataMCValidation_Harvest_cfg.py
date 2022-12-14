@@ -32,7 +32,7 @@ process.maxEvents = cms.untracked.PSet(
 filenames = []
 
 for i in range(len(options.inputFiles)):
-    filenames.append('file:test_alignmentReRECO_definitive_allRECO_DQMAlignment_'+str(options.layersThreshold)+'layers_'+options.inputFiles[i]+'.root')
+    filenames.append('file:alignmentReRECO_definitive_allRECO_DQMAlignment_'+str(options.layersThreshold)+'layers_'+options.inputFiles[i]+'.root')
 
 # Input source
 process.source = cms.Source("PoolSource",

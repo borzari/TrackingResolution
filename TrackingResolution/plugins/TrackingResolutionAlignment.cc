@@ -97,7 +97,7 @@ void TrackingResolutionAlignment::analyze(edm::Event const& iEvent, edm::EventSe
 
   const reco::Vertex vertex = vertices->at(0);
 
-  int hitsRemain_int = stoi(hitsRemain);
+  //int hitsRemain_int = stoi(hitsRemain);
   int numTracks = 0;
   int numRerecoTracks = 0;
   int numRerecoMatchedTracks = 0;
@@ -150,8 +150,6 @@ void TrackingResolutionAlignment::analyze(edm::Event const& iEvent, edm::EventSe
                 int track_trackerLayersWithMeasurement = track_rereco->hitPattern().trackerLayersWithMeasurement();
                 int track_pixelLayersWithMeasurement = track_rereco->hitPattern().pixelLayersWithMeasurement();
 
-                //if(track_trackerLayersWithMeasurement < hitsRemain_int) std::cout << "1:" << iEvent.id().event() << "\',\'";
-
                 trackPixelLayers_->Fill(track_pixelLayersWithMeasurement);
                 trackTrackerLayers_->Fill(track_trackerLayersWithMeasurement);
 
@@ -178,8 +176,6 @@ void TrackingResolutionAlignment::analyze(edm::Event const& iEvent, edm::EventSe
 
     }
 
-    //if(numTracks > 0) trackEfficiencyCalc_->Fill(0.0);
-
   }
 
   if(numTracks > 0) trackEfficiencyCalc_->Fill(0.0);
@@ -187,7 +183,6 @@ void TrackingResolutionAlignment::analyze(edm::Event const& iEvent, edm::EventSe
   //std::cout << "##################### END OF EVENT #####################" << std::endl;
 
 }
-//void TrackingResolutionAlignment::endLuminosityBlock(edm::LuminosityBlock const& lumiBlock, edm::EventSetup const& eSetup){}
 // Define this as a plug-in
 #include "FWCore/Framework/interface/MakerMacros.h"
 DEFINE_FWK_MODULE(TrackingResolutionAlignment);

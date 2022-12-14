@@ -12,8 +12,10 @@ The output file with the histograms will be named something that is defined in l
 **Necessary checks**
   - Number of layers in shortened tracks (after selection) is a bit different from the number of layers asked for;
      - Answer: the module **TrackerTrackHitFilter** doesn't have a very fine control about the number of layers with measurement to remain in the refitted track. Need to check what is the better option here;
-  - In config file, modules **MeasurementTrackerEvent** and **TrackRefitter** were needed. Couldn't pass **generalTracks** directly to **TrackerTrackHitFilter** and don't understand why this happens very well (**MeasurementTrackerEvent** is just used by **TrackRefitter**).
+  - In config file, modules **MeasurementTrackerEvent** and **TrackRefitter** were needed. Couldn't pass **generalTracks** directly to **TrackerTrackHitFilter** and don't understand why this happens very well (**MeasurementTrackerEvent** is just used by **TrackRefitter**)
+     - Answer: Indeed the refitting is needed to construct track collections (instead of reco::Tracks only as is the generalTracks case), and, in that case, **MeasurementTrackerEvent** is necessary.
 
 **Improvements**
   - Only performing track recHits selection and refitting after, event throughput is much higher, around 75 ev/s;
+     - The throughput actually depends a lot: sometimes it can be as high as 200 ev/s, but also as low as 30 ev/s;
   - Can start from GEN-SIM-RECO and don't need to perform any reconstruction (or re-reconstruction).

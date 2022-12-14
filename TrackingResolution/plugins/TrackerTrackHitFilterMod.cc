@@ -58,6 +58,9 @@
  *     minimumHits             = Minimum hits that the output TrackCandidate must have to be saved
  *     replaceWithInactiveHits = instead of discarding hits, replace them with a invalid "inactive" hits,
  *                               so multiple scattering is accounted for correctly.
+ *     truncateTracks          = determines if recHits collection is to be truncated to provide tracks with
+ *                               layersRemaining number of layers after refitting
+ *     layersRemaining         = number of tracker layers with measurement remaining after truncating track
  *     stripFrontInvalidHits   = strip invalid hits at the beginning of the track
  *     stripBackInvalidHits    = strip invalid hits at the end of the track
  *     stripAllInvalidHits     = remove ALL invald hits (might be a problem for multiple scattering, use with care!)
@@ -559,6 +562,7 @@ namespace reco {
       reco::HitPattern hp = tk.hitPattern();
       bool isFirstValidHitInLayerAux = false;
 
+      // in some layers, up to 4 hits exist -> all of them need to be checked
       uint32_t thisLayer;
       uint32_t prevLayer;
       uint32_t prevPrevLayer;
@@ -582,6 +586,7 @@ namespace reco {
       prevPrevSubStruct = hp.getSubStructure(mHit);
       prevPrevPrevSubStruct = hp.getSubStructure(lHit);
 
+      // If hit is not valid, it will not count as a tracker layer with measurement -> don't increase sequLayers
       if(isNotValidVec[int(isNotValidVec.size()) - 1]) {
         //if(int(isNotValidVec.size()) > 1) {std::cout << "isFirstValidHitInLayerAux = " << isFirstValidHitInLayerAux << " -- thisSubStruct = " << thisSubStruct << " -- thisLayer = " << thisLayer << " -- isNotValidVec[int(isNotValidVec.size()) - 2] = " << isNotValidVec[int(isNotValidVec.size()) - 2] << " -- isNotValidVec[int(isNotValidVec.size()) - 1] = " << isNotValidVec[int(isNotValidVec.size()) - 1];} // For debugging
         //else{std::cout << "isFirstValidHitInLayerAux = " << isFirstValidHitInLayerAux << " -- thisSubStruct = " << thisSubStruct << " -- thisLayer = " << thisLayer << " -- isNotValidVec[int(isNotValidVec.size()) - 1] = " << isNotValidVec[int(isNotValidVec.size()) - 1];} // For debugging
@@ -611,6 +616,11 @@ namespace reco {
         if (isTheSame) break;
       }*/
 
+      // These ifs compare whether the previous hits substructure and layer with current hit. If hits in the same layer
+      // and substructure and previous hit is valid, skip layer. If previous hit is not valid, even if same layer
+      // and substructure, increase sequLayers. Repeat process for every previous hit until 3 hits before current
+      // As stated above a loop could be used here instead of manually assining a given number of previous hits to
+      // check; it could stop as soon as previous hit being checked is not in same layer and substructure as next hit
       if (int(isNotValidVec.size()) > 1 && isNotValidVec[int(isNotValidVec.size()) - 2] == false) {
         if(!((thisLayer==prevLayer)&&(thisSubStruct==prevSubStruct))) isFirstValidHitInLayerAux = true;
       }
@@ -634,7 +644,6 @@ namespace reco {
 
     unsigned int TrackerTrackHitFilterMod::getSequLayer(const reco::Track &tk, unsigned int prevSequLayers, std::vector<bool> isNotValidVec){
 
-      reco::HitPattern hp = tk.hitPattern();
       unsigned int sequLayers = 0;
 
       if(isFirstValidHitInLayer(tk, isNotValidVec)) {sequLayers = prevSequLayers + 1;}
@@ -681,6 +690,7 @@ namespace reco {
 
         //if(! (*hitsBegin)->isValid() ) std::cout<<"Putting in the trackcandidate an INVALID HIT !"<<std::endl;
 
+        // Only perform hit checking and verification of number of layers if recHits are to be truncated
         if(truncateTracks_) {
 
           if(breakHitLoop) {break;}
