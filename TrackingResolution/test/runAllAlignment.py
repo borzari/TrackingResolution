@@ -13,6 +13,7 @@ def find(test_list, val):
 parser = argparse.ArgumentParser(description='Passing mass and ctau to submit condor jobs for step4.')
 parser.add_argument('--step', dest='step', default='RECO,reRECO,DQM,Harvest', help='Steps of tracking resolution (default [RECO,reRECO,DQM,Harvest])')
 parser.add_argument('--layersThreshold', dest='layersThreshold', default=3, help='Number of threshold layers (from 3 to 8 so far)')
+parser.add_argument('--numEvents', dest='numEvents', default=-1, help='Number of events to run')
 
 args = parser.parse_args()
 
@@ -81,12 +82,12 @@ for step in stepList:
         #print("cmsRun python/reRECO.py inputFiles=OUTPUT_FILE_NAME outputFile=OUTPUT_FILE_NAME layersThreshold="+layersThreshold)
     if step == 'DQM':
         print("Running DQM")
-        os.system("cmsRun test/Alignment_Tracker_DataMCValidation_cfg.py inputFiles=OUTPUT_FILE_NAME outputFile=OUTPUT_FILE_NAME layersThreshold="+layersThreshold)
+        os.system("cmsRun test/Alignment_Tracker_DataMCValidation_cfg.py inputFiles=OUTPUT_FILE_NAME outputFile=OUTPUT_FILE_NAME numEvents="+str(args.numEvents)+" layersThreshold="+layersThreshold)
         #print("cmsRun test/Tracker_DataMCValidation_cfg.py inputFiles=OUTPUT_FILE_NAME outputFile=OUTPUT_FILE_NAME layersThreshold="+layersThreshold)
     if step == 'Harvest':
         harvestFile = 'Harvest_Alignment'
         if int(layersThreshold) < 3 or int(layersThreshold) > 8: harvestFile = harvestFile+'_allLayers'
         else: harvestFile = harvestFile+'_'+layersThreshold+'layers'
         print("Harvesting histograms and saving as "+harvestFile+".root")
-        os.system("cmsRun test/Alignment_Tracker_DataMCValidation_Harvest_cfg.py inputFiles=OUTPUT_FILE_NAME layersThreshold="+layersThreshold+"; mv DQM_V0001_R000000001__Global__CMSSW_X_Y_Z__RECO.root "+harvestFile+".root")
+        os.system("cmsRun test/Alignment_Tracker_DataMCValidation_Harvest_cfg.py inputFiles=OUTPUT_FILE_NAME layersThreshold="+layersThreshold+"; mv DQM_*__Global__CMSSW_X_Y_Z__RECO.root "+harvestFile+".root")
         #print("cmsRun test/Tracker_DataMCValidation_Harvest_cfg.py inputFiles=OUTPUT_FILE_NAME layersThreshold="+layersThreshold+"; mv DQM_V0001_R000000001__Global__CMSSW_X_Y_Z__RECO.root "+harvestFile+".root")

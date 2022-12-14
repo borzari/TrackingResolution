@@ -11,6 +11,12 @@ options.register ('layersThreshold',
                   VarParsing.varType.int,          # string, int, or float
                   "Number of threshold layers (from 3 to 8 so far)")
 
+options.register ('numEvents',
+                  -1, # default value
+                  VarParsing.multiplicity.singleton, # singleton or list
+                  VarParsing.varType.int,          # string, int, or float
+                  "Number of events to run")
+
 options.parseArguments()
 
 process = cms.Process('DQM')
@@ -28,7 +34,7 @@ process.load('Configuration.StandardSequences.EndOfProcess_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(-1)
+    input = cms.untracked.int32(options.numEvents)
 )
 
 filenames = []
@@ -43,7 +49,7 @@ process.source = cms.Source("PoolSource",
   secondaryFileNames = cms.untracked.vstring(),
   fileNames = cms.untracked.vstring(
     filenames
-  )
+  ),
 )
 
 process.options = cms.untracked.PSet(
@@ -62,23 +68,11 @@ process.configurationMetadata = cms.untracked.PSet(
 process.DQMoutput = cms.OutputModule("PoolOutputModule",
     splitLevel = cms.untracked.int32(0),
     outputCommands = process.DQMEventContent.outputCommands,
-    fileName = cms.untracked.string('file:test_alignmentReRECO_definitive_allRECO_DQMAlignment_'+str(options.layersThreshold)+'layers_'+options.outputFile),
+    fileName = cms.untracked.string('file:alignmentReRECO_definitive_allRECO_DQMAlignment_'+str(options.layersThreshold)+'layers_'+options.outputFile),
     dataset = cms.untracked.PSet(
         filterName = cms.untracked.string(''),
         dataTier = cms.untracked.string('')
     )
-)
-
-process.RECOSIMoutput = cms.OutputModule("PoolOutputModule",
-    dataset = cms.untracked.PSet(
-        dataTier = cms.untracked.string('GEN-SIM-RECO'),
-        filterName = cms.untracked.string('')
-    ),
-    fileName = cms.untracked.string('file:/eos/user/b/borzari/TrackingRootFile/test_alignmentReRECO_definitive_allRECO_Alignment_'+str(options.layersThreshold)+'layers_'+options.outputFile),
-    outputCommands = cms.untracked.vstring( (
-    'keep *'
-         ) ),
-    splitLevel = cms.untracked.int32(0)
 )
 
 # Additional output definition
@@ -88,7 +82,7 @@ from Configuration.AlCa.GlobalTag import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase1_2022_realistic', '')
 
 process.load("FWCore.MessageLogger.MessageLogger_cfi")
-process.MessageLogger.cerr.FwkReport.reportEvery = 1000
+process.MessageLogger.cerr.FwkReport.reportEvery = 2000
 
 ###################################################################
 ## Load and Configure TrackRefitter
@@ -105,75 +99,78 @@ process.TrackRefitter = process.TrackRefitter.clone(
     NavigationSchool = ''
 )
 
-process.load("RecoTracker.FinalTrackSelectors.TrackerTrackHitFilter_cff")
-process.TrackerTrackHitFilter.src = 'TrackRefitter'
-#process.TrackerTrackHitFilter.src = 'generalTracks'
-process.TrackerTrackHitFilter.useTrajectories= True  # this is needed only if you require some selections; but it will work even if you don't ask for them
-process.TrackerTrackHitFilter.minimumHits = 8
-process.TrackerTrackHitFilter.commands = cms.vstring("keep PXB","keep PXE","keep TIB","keep TID","keep TOB","keep TEC")
-process.TrackerTrackHitFilter.detsToIgnore = []
-process.TrackerTrackHitFilter.replaceWithInactiveHits = True
-process.TrackerTrackHitFilter.stripAllInvalidHits = False
-process.TrackerTrackHitFilter.rejectBadStoNHits = True
-process.TrackerTrackHitFilter.StoNcommands = cms.vstring("ALL 14.0")
-process.TrackerTrackHitFilter.rejectLowAngleHits= True
-process.TrackerTrackHitFilter.TrackAngleCut= 0.35 # in rads, starting from the module surface
-process.TrackerTrackHitFilter.usePixelQualityFlag= True
-
-process.TrackerTrackHitFilter3 = process.TrackerTrackHitFilter.clone()
-process.TrackerTrackHitFilter3.minimumHits = 3
-process.TrackerTrackHitFilter3.commands = cms.vstring("keep PXB","keep PXE","drop TIB","drop TID","drop TOB","drop TEC")
-
-process.TrackerTrackHitFilter4 = process.TrackerTrackHitFilter.clone()
-process.TrackerTrackHitFilter4.minimumHits = 4
-process.TrackerTrackHitFilter4.commands = cms.vstring("keep PXB","keep PXE","keep TIB","keep TID","drop TOB","drop TEC")
-
-process.TrackerTrackHitFilter5 = process.TrackerTrackHitFilter.clone()
-process.TrackerTrackHitFilter5.minimumHits = 5
-process.TrackerTrackHitFilter5.commands = cms.vstring("keep PXB","keep PXE","keep TIB","keep TID","drop TOB","drop TEC")
-
-process.TrackerTrackHitFilter6 = process.TrackerTrackHitFilter.clone()
-process.TrackerTrackHitFilter6.minimumHits = 6
-process.TrackerTrackHitFilter6.commands = cms.vstring("keep PXB","keep PXE","keep TIB","keep TID","drop TOB","drop TEC")
-
-process.TrackerTrackHitFilter7 = process.TrackerTrackHitFilter.clone()
-process.TrackerTrackHitFilter7.minimumHits = 7
-process.TrackerTrackHitFilter7.commands = cms.vstring("keep PXB","keep PXE","keep TIB","keep TID","drop TOB","drop TEC")
-
-process.TrackerTrackHitFilter8 = process.TrackerTrackHitFilter.clone()
-process.TrackerTrackHitFilter8.minimumHits = 8
-process.TrackerTrackHitFilter8.commands = cms.vstring("keep PXB","keep PXE","keep TIB","keep TID","drop TOB","drop TEC")
-
-import RecoTracker.TrackProducer.CTFFinalFitWithMaterial_cff   #TrackRefitters_cff
-process.HitFilteredTracks = RecoTracker.TrackProducer.CTFFinalFitWithMaterial_cff.ctfWithMaterialTracks.clone(
-    src = 'TrackerTrackHitFilter',
-    TrajectoryInEvent = True,
-    TTRHBuilder = "WithAngleAndTemplate"
+process.TrackerTrackHitFilter = cms.EDProducer("TrackerTrackHitFilterMod",
+    src = cms.InputTag("TrackRefitter"),
+    minimumHits = cms.uint32(options.layersThreshold),
+    layersRemaining = cms.uint32(options.layersThreshold),
+    truncateTracks = cms.bool(True),
+    commands = cms.vstring("keep PXB","keep PXE","keep TIB","keep TID","keep TOB","keep TEC"),
+    detsToIgnore = cms.vuint32( ),
+    replaceWithInactiveHits =cms.bool(True),
+    stripFrontInvalidHits   =cms.bool(False),
+    stripBackInvalidHits    =cms.bool(False),
+    stripAllInvalidHits = cms.bool(False),
+    rejectBadStoNHits = cms.bool(True),
+    CMNSubtractionMode = cms.string("Median"),
+    StoNcommands = cms.vstring("ALL 14.0"),
+    useTrajectories=cms.bool(False),
+    rejectLowAngleHits=cms.bool(False),
+    TrackAngleCut=cms.double(0.35),
+    tagOverlaps=cms.bool(False),
+    usePixelQualityFlag=cms.bool(True),
+    PxlTemplateProbXYCut=cms.double(0.000125),
+    PxlTemplateProbXYChargeCut=cms.double(-99.),
+    PxlTemplateqBinCut =cms.vint32(0, 3),
+    PxlCorrClusterChargeCut = cms.double(-999.0)
 )
 
-process.HitFilteredTracks3 = process.HitFilteredTracks.clone()
-process.HitFilteredTracks3.src = 'TrackerTrackHitFilter3'
+if options.layersThreshold<3 or options.layersThreshold>8:
+    for i in range(3,9):
+        setattr(process,"TrackerTrackHitFilter"+str(i),process.TrackerTrackHitFilter.clone(
+                minimumHits = i,
+                layersRemaining = i,
+            )
+        )
 
-process.HitFilteredTracks4 = process.HitFilteredTracks.clone()
-process.HitFilteredTracks4.src = 'TrackerTrackHitFilter4'
+process.HitFilteredTracks = cms.EDProducer("TrackProducer",
+    useSimpleMF = cms.bool(False),
+    SimpleMagneticField = cms.string(""),
+    src = cms.InputTag("TrackerTrackHitFilter"),
+    clusterRemovalInfo = cms.InputTag(""),
+    beamSpot = cms.InputTag("offlineBeamSpot"),
+    Fitter = cms.string('KFFittingSmootherWithOutliersRejectionAndRK'),
+    useHitsSplitting = cms.bool(False),
+    alias = cms.untracked.string('ctfWithMaterialTracks'),
+    TrajectoryInEvent = cms.bool(True),
+    TTRHBuilder = cms.string('WithAngleAndTemplate'),
+    AlgorithmName = cms.string('undefAlgorithm'),
+    Propagator = cms.string('RungeKuttaTrackerPropagator'),
 
-process.HitFilteredTracks5 = process.HitFilteredTracks.clone()
-process.HitFilteredTracks5.src = 'TrackerTrackHitFilter5'
+    # this parameter decides if the propagation to the beam line
+    # for the track parameters defiition is from the first hit
+    # or from the closest to the beam line
+    # true for cosmics/beam halo, false for collision tracks (needed by loopers)
+    GeometricInnerState = cms.bool(False),
 
-process.HitFilteredTracks6 = process.HitFilteredTracks.clone()
-process.HitFilteredTracks6.src = 'TrackerTrackHitFilter6'
+    ### These are paremeters related to the filling of the Secondary hit-patterns
+    #set to "", the secondary hit pattern will not be filled (backward compatible with DetLayer=0)
+    NavigationSchool = cms.string('SimpleNavigationSchool'),
+    MeasurementTracker = cms.string(''),
+    MeasurementTrackerEvent = cms.InputTag('MeasurementTrackerEvent'),
+)
 
-process.HitFilteredTracks7 = process.HitFilteredTracks.clone()
-process.HitFilteredTracks7.src = 'TrackerTrackHitFilter7'
-
-process.HitFilteredTracks8 = process.HitFilteredTracks.clone()
-process.HitFilteredTracks8.src = 'TrackerTrackHitFilter8'
+if options.layersThreshold<3 or options.layersThreshold>8:
+    for i in range(3,9):
+        setattr(process,"HitFilteredTracks"+str(i),process.HitFilteredTracks.clone(
+                src = 'TrackerTrackHitFilter'+str(i),
+            )
+        )
 
 # Tracker Data MC validation suite
 process.trackingResolution = DQMEDAnalyzer("TrackingResolutionAlignment",
     moduleName        = cms.untracked.string("testTrackingResolution"),
     folderName        = cms.untracked.string("TrackRefitting"),
-    hitsRemainInput        = cms.untracked.string("0"),
+    hitsRemainInput        = cms.untracked.string(str(options.layersThreshold)),
     minTracksEtaInput      = cms.untracked.double(0.0),
     maxTracksEtaInput      = cms.untracked.double(2.2),
     minTracksPtInput      = cms.untracked.double(15.0),
@@ -185,53 +182,26 @@ process.trackingResolution = DQMEDAnalyzer("TrackingResolutionAlignment",
     maxDzInput      = cms.untracked.double(0.1),
     maxDrInput      = cms.untracked.double(0.01),
     minNumberOfLayersInput      = cms.untracked.int32(10),
-    tracksInputTag     = cms.untracked.InputTag("generalTracks", "", "RECO"),
+    tracksInputTag     = cms.untracked.InputTag("TrackRefitter", "", "DQM"),
     primVertexInputTag = cms.untracked.InputTag("offlinePrimaryVertices", "", "RECO"),
     tracksRerecoInputTag     = cms.untracked.InputTag("HitFilteredTracks", "", "DQM")
 )
 
-process.trackingResolution3 = process.trackingResolution.clone()
-process.trackingResolution3.tracksInputTag=cms.untracked.InputTag("rCluster", "", "DQM")
-process.trackingResolution3.tracksRerecoInputTag=cms.untracked.InputTag("HitFilteredTracks3", "", "DQM")
-process.trackingResolution3.hitsRemainInput=cms.untracked.string("3")
-
-process.trackingResolution4 = process.trackingResolution3.clone()
-process.trackingResolution4.tracksInputTag=cms.untracked.InputTag("rCluster", "", "DQM")
-process.trackingResolution4.tracksRerecoInputTag=cms.untracked.InputTag("HitFilteredTracks4", "", "DQM")
-process.trackingResolution4.hitsRemainInput=cms.untracked.string("4")
-
-process.trackingResolution5 = process.trackingResolution3.clone()
-process.trackingResolution5.tracksInputTag=cms.untracked.InputTag("rCluster", "", "DQM")
-process.trackingResolution5.tracksRerecoInputTag=cms.untracked.InputTag("HitFilteredTracks5", "", "DQM")
-process.trackingResolution5.hitsRemainInput=cms.untracked.string("5")
-
-process.trackingResolution6 = process.trackingResolution3.clone()
-process.trackingResolution6.tracksInputTag=cms.untracked.InputTag("rCluster", "", "DQM")
-process.trackingResolution6.tracksRerecoInputTag=cms.untracked.InputTag("HitFilteredTracks6", "", "DQM")
-process.trackingResolution6.hitsRemainInput=cms.untracked.string("6")
-
-process.trackingResolution7 = process.trackingResolution3.clone()
-process.trackingResolution7.tracksInputTag=cms.untracked.InputTag("rCluster", "", "DQM")
-process.trackingResolution7.tracksRerecoInputTag=cms.untracked.InputTag("HitFilteredTracks7", "", "DQM")
-process.trackingResolution7.hitsRemainInput=cms.untracked.string("7")
-
-process.trackingResolution8 = process.trackingResolution3.clone()
-process.trackingResolution8.tracksInputTag=cms.untracked.InputTag("rCluster", "", "DQM")
-process.trackingResolution8.tracksRerecoInputTag=cms.untracked.InputTag("HitFilteredTracks8", "", "DQM")
-process.trackingResolution8.hitsRemainInput=cms.untracked.string("8")
+if options.layersThreshold<3 or options.layersThreshold>8:
+    for i in range(3,9):
+        setattr(process,"trackingResolution"+str(i),process.trackingResolution.clone(
+                tracksRerecoInputTag = cms.untracked.InputTag("HitFilteredTracks"+str(i), "", "DQM"),
+                hitsRemainInput = cms.untracked.string(str(i))
+            )
+        )
 
 # Path and EndPath definitions
 process.load("TrackingResolution.TrackingResolution.RClusterSeq_Alignment_cff")
 
 process.p = cms.Path(process.RClusterSeq)
 
-if options.layersThreshold==3: process.analysis_step = cms.Path(process.MeasurementTrackerEvent*process.TrackRefitter*process.TrackerTrackHitFilter3*process.HitFilteredTracks3*process.trackingResolution3)
-if options.layersThreshold==4: process.analysis_step = cms.Path(process.MeasurementTrackerEvent*process.TrackRefitter*process.TrackerTrackHitFilter4*process.HitFilteredTracks4*process.trackingResolution4)
-if options.layersThreshold==5: process.analysis_step = cms.Path(process.MeasurementTrackerEvent*process.TrackRefitter*process.TrackerTrackHitFilter5*process.HitFilteredTracks5*process.trackingResolution5)
-if options.layersThreshold==6: process.analysis_step = cms.Path(process.MeasurementTrackerEvent*process.TrackRefitter*process.TrackerTrackHitFilter6*process.HitFilteredTracks6*process.trackingResolution6)
-if options.layersThreshold==7: process.analysis_step = cms.Path(process.MeasurementTrackerEvent*process.TrackRefitter*process.TrackerTrackHitFilter7*process.HitFilteredTracks7*process.trackingResolution7)
-if options.layersThreshold==8: process.analysis_step = cms.Path(process.MeasurementTrackerEvent*process.TrackRefitter*process.TrackerTrackHitFilter8*process.HitFilteredTracks8*process.trackingResolution8)
 if options.layersThreshold<3 or options.layersThreshold>8: process.analysis_step = cms.Path(process.MeasurementTrackerEvent*process.TrackRefitter*process.TrackerTrackHitFilter3*process.TrackerTrackHitFilter4*process.TrackerTrackHitFilter5*process.TrackerTrackHitFilter6*process.TrackerTrackHitFilter7*process.TrackerTrackHitFilter8*process.HitFilteredTracks3*process.HitFilteredTracks4*process.HitFilteredTracks5*process.HitFilteredTracks6*process.HitFilteredTracks7*process.HitFilteredTracks8*process.trackingResolution3*process.trackingResolution4*process.trackingResolution5*process.trackingResolution6*process.trackingResolution7*process.trackingResolution8)
+else: process.analysis_step = cms.Path(process.MeasurementTrackerEvent*process.TrackRefitter*process.TrackerTrackHitFilter*process.HitFilteredTracks*process.trackingResolution)
 
 process.endjob_step = cms.EndPath(process.endOfProcess)
 process.DQMoutput_step = cms.EndPath(process.DQMoutput)
@@ -239,13 +209,16 @@ process.DQMoutput_step = cms.EndPath(process.DQMoutput)
 # Schedule definition
 process.schedule = cms.Schedule(process.p,process.analysis_step, process.endjob_step, process.DQMoutput_step)
 
-print(process.analysis_step)
-print(process.schedule)
+#  Added: timing service (throughput measurement quite unreproduceable)
+process.Timing = cms.Service("Timing",
+    summaryOnly = cms.untracked.bool(True),
+    useJobReport = cms.untracked.bool(False)
+)
 
-# customisation of the process.
-
-# Automatic addition of the customisation function from Configuration.DataProcessing.Utils
-from Configuration.DataProcessing.Utils import addMonitoring
-
-#call to customisation function addMonitoring imported from Configuration.DataProcessing.Utils
-process = addMonitoring(process)
+# Added: Throughput service (Andrea). Testing.
+process.ThroughputService = cms.Service('ThroughputService',
+    enableDQM = cms.untracked.bool(False),
+    printEventSummary = cms.untracked.bool(True),
+    eventResolution = cms.untracked.uint32(1000),
+    eventRange = cms.untracked.uint32(100)    # this is just an optimisation for the initial memory allocation
+)

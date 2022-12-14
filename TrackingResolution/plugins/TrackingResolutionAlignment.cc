@@ -60,14 +60,7 @@ TrackingResolutionAlignment::TrackingResolutionAlignment(const edm::ParameterSet
 {
 
   trackPtAllPt_ = nullptr;
-  trackPtLowPt_ = nullptr;
-  trackPtMedPt_ = nullptr;
-  trackPtHigPt_ = nullptr;
-
   trackChi2ndofAllPt_ = nullptr;
-  trackChi2ndofLowPt_ = nullptr;
-  trackChi2ndofMedPt_ = nullptr;
-  trackChi2ndofHigPt_ = nullptr;
 
   trackPixelLayers_ = nullptr;
   trackTrackerLayers_ = nullptr;
@@ -85,14 +78,7 @@ void TrackingResolutionAlignment::bookHistograms(DQMStore::IBooker &iBook, edm::
   trackTrackerLayers_ = iBook.book1D("trackTrackerLayers"+hitsRemain+"l", "Tracker layers with measurement - "+hitsRemain+" layers",11,-0.5,10.5);
 
   trackPtAllPt_ = iBook.book1D("trackPt"+hitsRemain+"lAllPt", "Track p_{T} - "+hitsRemain+" layers",41,0.0,2.0);
-  trackPtLowPt_ = iBook.book1D("trackPt"+hitsRemain+"lLowPt", "Track p_{T} - "+hitsRemain+" layers",41,0.0,2.0);
-  trackPtMedPt_ = iBook.book1D("trackPt"+hitsRemain+"lMedPt", "Track p_{T} - "+hitsRemain+" layers",41,0.0,2.0);
-  trackPtHigPt_ = iBook.book1D("trackPt"+hitsRemain+"lHigPt", "Track p_{T} - "+hitsRemain+" layers",41,0.0,2.0);
-
   trackChi2ndofAllPt_ = iBook.book1D("trackChi2ndof"+hitsRemain+"lAllPt", "Chi^{2} / ndof - "+hitsRemain+" layers",40,0.0,2.0);
-  trackChi2ndofLowPt_ = iBook.book1D("trackChi2ndof"+hitsRemain+"lLowPt", "Chi^{2} / ndof - "+hitsRemain+" layers",40,0.0,2.0);
-  trackChi2ndofMedPt_ = iBook.book1D("trackChi2ndof"+hitsRemain+"lMedPt", "Chi^{2} / ndof - "+hitsRemain+" layers",40,0.0,2.0);
-  trackChi2ndofHigPt_ = iBook.book1D("trackChi2ndof"+hitsRemain+"lHigPt", "Chi^{2} / ndof - "+hitsRemain+" layers",40,0.0,2.0);
 
   trackEfficiencyCalc_ = iBook.book1D("trackEfficiencyCalc"+hitsRemain+"l", "Number of shortened matched and full tracks - "+hitsRemain+" layers",3,-0.5,2.5);
 
@@ -111,7 +97,7 @@ void TrackingResolutionAlignment::analyze(edm::Event const& iEvent, edm::EventSe
 
   const reco::Vertex vertex = vertices->at(0);
 
-  //int hitsRemain_int = stoi(hitsRemain);
+  int hitsRemain_int = stoi(hitsRemain);
   int numTracks = 0;
   int numRerecoTracks = 0;
   int numRerecoMatchedTracks = 0;
@@ -120,12 +106,15 @@ void TrackingResolutionAlignment::analyze(edm::Event const& iEvent, edm::EventSe
 
     //std::cout << "Started loop on generalTracks" << std::endl;
 
+    reco::HitPattern hp = track->hitPattern();
+    if(int(int(hp.numberOfValidHits()) - int(hp.numberOfAllHits(reco::HitPattern::TRACK_HITS))) != 0) {break;}
+
     Double_t dxy = (track->dxy(vertex.position()));
     Double_t dz = (track->dz(vertex.position()));
     TLorentzVector tvec;
     tvec.SetPtEtaPhiM(track->pt(),track->eta(),track->phi(),0.0);
 
-    if(track->hitPattern().trackerLayersWithMeasurement() > minNumberOfLayers){
+    if(hp.trackerLayersWithMeasurement() > minNumberOfLayers){
 
       //std::cout << "Tracks with more trackerLayersWithMeasurement than minNumberOfLayers" << std::endl;
 
@@ -161,52 +150,18 @@ void TrackingResolutionAlignment::analyze(edm::Event const& iEvent, edm::EventSe
                 int track_trackerLayersWithMeasurement = track_rereco->hitPattern().trackerLayersWithMeasurement();
                 int track_pixelLayersWithMeasurement = track_rereco->hitPattern().pixelLayersWithMeasurement();
 
+                //if(track_trackerLayersWithMeasurement < hitsRemain_int) std::cout << "1:" << iEvent.id().event() << "\',\'";
+
                 trackPixelLayers_->Fill(track_pixelLayersWithMeasurement);
                 trackTrackerLayers_->Fill(track_trackerLayersWithMeasurement);
 
                 trackPtAllPt_->Fill(1.0*track_rereco->pt()/track->pt());
-
-                if(track->pt()>=lowPtRegion && track->pt()<medPtRegion){
-
-                  trackPtLowPt_->Fill(1.0*track_rereco->pt()/track->pt());
-
-                }
-
-                if(track->pt()>=medPtRegion && track->pt()<higPtRegion){
-
-                  trackPtMedPt_->Fill(1.0*track_rereco->pt()/track->pt());
-
-                }
-
-                if(track->pt()>=higPtRegion){
-
-                  trackPtHigPt_->Fill(1.0*track_rereco->pt()/track->pt());
-
-                }
 
                 double track_chi2perNdof = 0.0;
 
                 if(track_rereco->ndof()>0) track_chi2perNdof = 1.0*track_rereco->chi2()/track_rereco->ndof();
 
                 trackChi2ndofAllPt_->Fill(track_chi2perNdof);
-
-                if(track->pt()>=lowPtRegion && track->pt()<medPtRegion){
-
-                  trackChi2ndofLowPt_->Fill(track_chi2perNdof);
-
-                }
-
-                if(track->pt()>=medPtRegion && track->pt()<higPtRegion){
-
-                  trackChi2ndofMedPt_->Fill(track_chi2perNdof);
-
-                }
-
-                if(track->pt()>=higPtRegion){
-
-                  trackChi2ndofHigPt_->Fill(track_chi2perNdof);
-
-                }
 
               }
 
@@ -222,6 +177,8 @@ void TrackingResolutionAlignment::analyze(edm::Event const& iEvent, edm::EventSe
       }
 
     }
+
+    //if(numTracks > 0) trackEfficiencyCalc_->Fill(0.0);
 
   }
 
