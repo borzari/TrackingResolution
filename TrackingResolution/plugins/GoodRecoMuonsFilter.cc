@@ -17,33 +17,34 @@
 #include "DataFormats/TrackReco/interface/TrackFwd.h"
 #include <TLorentzVector.h>
 
-class GoodRecoMuonsFilter : public edm::stream::EDFilter<> {
-  public:
-    explicit GoodRecoMuonsFilter(const edm::ParameterSet&);
-    ~GoodRecoMuonsFilter();
+class GoodRecoMuonsFilter : public edm::stream::EDFilter<>
+{
+public:
+  explicit GoodRecoMuonsFilter(const edm::ParameterSet &);
+  ~GoodRecoMuonsFilter();
 
-    static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
+  static void fillDescriptions(edm::ConfigurationDescriptions &descriptions);
 
-  private:
-    virtual void beginStream(edm::StreamID) override;
-    virtual bool filter(edm::Event&, const edm::EventSetup&) override;
-    virtual void endStream() override;
+private:
+  virtual void beginStream(edm::StreamID) override;
+  virtual bool filter(edm::Event &, const edm::EventSetup &) override;
+  virtual void endStream() override;
 
-    edm::EDGetTokenT<std::vector<reco::Muon>> muonsToken; 
-    edm::EDGetTokenT<std::vector<reco::Track>> tracksToken;
-    float minpt_;
-    float maxabseta_;
-    float maxDr_;
-    float minNumberOfLayers_;
+  edm::EDGetTokenT<std::vector<reco::Muon>> muonsToken;
+  edm::EDGetTokenT<std::vector<reco::Track>> tracksToken;
+  float minpt_;
+  float maxabseta_;
+  float maxDr_;
+  float minNumberOfLayers_;
 };
 
-GoodRecoMuonsFilter::GoodRecoMuonsFilter(const edm::ParameterSet& iConfig)
+GoodRecoMuonsFilter::GoodRecoMuonsFilter(const edm::ParameterSet &iConfig)
 {
   muonsToken = consumes<std::vector<reco::Muon>>(iConfig.getParameter<edm::InputTag>("muonlabel"));
   tracksToken = consumes<reco::TrackCollection>(iConfig.getParameter<edm::InputTag>("trackslabel"));
-  minpt_     = iConfig.getParameter<double>("minPt");
+  minpt_ = iConfig.getParameter<double>("minPt");
   maxabseta_ = iConfig.getParameter<double>("maxAbsEta");
-  maxDr_     = iConfig.getParameter<double>("maxDr");
+  maxDr_ = iConfig.getParameter<double>("maxDr");
   minNumberOfLayers_ = iConfig.getParameter<int>("minNumberOfLayers");
 }
 
@@ -51,29 +52,32 @@ GoodRecoMuonsFilter::~GoodRecoMuonsFilter()
 {
 }
 
-bool
-GoodRecoMuonsFilter::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
+bool GoodRecoMuonsFilter::filter(edm::Event &iEvent, const edm::EventSetup &iSetup)
 {
-
   using namespace edm;
   Handle<std::vector<reco::Muon>> muons;
-  iEvent.getByToken( muonsToken, muons);
-      
+  iEvent.getByToken(muonsToken, muons);
+
   Handle<reco::TrackCollection> tracks;
   iEvent.getByToken(tracksToken, tracks);
-	
+
   bool result = false;
-  for( const auto& muon : *muons){
-    if ((muon.pt() > minpt_) && (abs(muon.eta()) < maxabseta_)) {
-	   	   
+  for (const auto &muon : *muons)
+  {
+    if ((muon.pt() > minpt_) && (abs(muon.eta()) < maxabseta_))
+    {
+
       // track matching:
-      for( const auto& track : *tracks){
-        TLorentzVector pTrack (track.px(), track.py(), track.pz(), track.pt());
-        TLorentzVector pMuon (muon.px(), muon.py(), muon.pz(), muon.pt());
+      for (const auto &track : *tracks)
+      {
+        TLorentzVector pTrack(track.px(), track.py(), track.pz(), track.pt());
+        TLorentzVector pMuon(muon.px(), muon.py(), muon.pz(), muon.pt());
         Double_t dr = pTrack.DeltaR(pMuon);
-        if (dr<maxDr_) {
+        if (dr < maxDr_)
+        {
           reco::HitPattern hitpattern = track.hitPattern();
-          if (hitpattern.trackerLayersWithMeasurement()>minNumberOfLayers_) {
+          if (hitpattern.trackerLayersWithMeasurement() > minNumberOfLayers_)
+          {
             result = true;
             break;
           }
@@ -81,21 +85,20 @@ GoodRecoMuonsFilter::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
       }
     }
   }
-   
+
   return result;
 }
 
-void
-GoodRecoMuonsFilter::beginStream(edm::StreamID)
+void GoodRecoMuonsFilter::beginStream(edm::StreamID)
 {
 }
 
-void
-GoodRecoMuonsFilter::endStream() {
+void GoodRecoMuonsFilter::endStream()
+{
 }
 
-void
-GoodRecoMuonsFilter::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
+void GoodRecoMuonsFilter::fillDescriptions(edm::ConfigurationDescriptions &descriptions)
+{
   edm::ParameterSetDescription desc;
   desc.setUnknown();
   descriptions.addDefault(desc);

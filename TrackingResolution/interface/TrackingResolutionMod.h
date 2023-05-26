@@ -7,7 +7,6 @@
 #include <set>
 
 #include "FWCore/Framework/interface/Frameworkfwd.h"
-#include "FWCore/Framework/interface/EDAnalyzer.h"
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/EventSetup.h"
 #include "DataFormats/TrackReco/interface/TrackFwd.h"
@@ -46,18 +45,17 @@
 #include "DataFormats/TrackerRecHit2D/interface/SiStripMatchedRecHit2DCollection.h"
 #include "DataFormats/TrackerRecHit2D/interface/Phase2TrackerRecHit1D.h"
 
-class TrackingResolutionMod : public DQMEDAnalyzer {
+class TrackingResolutionMod : public DQMEDAnalyzer
+{
 public:
-  TrackingResolutionMod( const edm::ParameterSet& );
+  TrackingResolutionMod(const edm::ParameterSet &);
 
 protected:
-
-//  void endLuminosityBlock(edm::LuminosityBlock const& lumiSeg, edm::EventSetup const& eSetup) override;
-  void analyze(edm::Event const& iEvent, edm::EventSetup const& iSetup) override;
+  //  void endLuminosityBlock(edm::LuminosityBlock const& lumiSeg, edm::EventSetup const& eSetup) override;
+  void analyze(edm::Event const &iEvent, edm::EventSetup const &iSetup) override;
   void bookHistograms(DQMStore::IBooker &, edm::Run const &, edm::EventSetup const &) override;
 
 private:
-
   edm::ParameterSet parameters_;
 
   std::string moduleName_;
@@ -90,39 +88,38 @@ private:
   const edm::EDGetTokenT<std::vector<reco::Track>> tracksRerecoToken;
   const edm::EDGetTokenT<edmNew::DetSetVector<SiPixelRecHit>> siPixelRecHitsToken;
 
-  MonitorElement* allTracksTrackerLayers_;
-  MonitorElement* trackPixelLayers_;
-  MonitorElement* trackTrackerLayers_;
-  MonitorElement* trackTrackerLayersMiss_;
-  MonitorElement* trackEfficiencyCalc_;
-  MonitorElement* trackHitResidual_;
-  MonitorElement* shortTrackHitResidual_;
-  MonitorElement* longTrackHitResidual_;
-  MonitorElement* longGoodTrackHitResidual_;
-  MonitorElement* trackDeltaRAllPt_;
+  MonitorElement *allTracksTrackerLayers_;
+  MonitorElement *trackPixelLayers_;
+  MonitorElement *trackTrackerLayers_;
+  MonitorElement *trackTrackerLayersMiss_;
+  MonitorElement *trackEfficiencyCalc_;
+  MonitorElement *trackHitResidual_;
+  MonitorElement *shortTrackHitResidual_;
+  MonitorElement *longTrackHitResidual_;
+  MonitorElement *longGoodTrackHitResidual_;
+  MonitorElement *trackDeltaRAllPt_;
 
-  MonitorElement* trackMissInnAllPt_;
-  MonitorElement* trackMissMidAllPt_;
-  MonitorElement* trackMissOutAllPt_;
+  MonitorElement *trackMissInnAllPt_;
+  MonitorElement *trackMissMidAllPt_;
+  MonitorElement *trackMissOutAllPt_;
 
-  MonitorElement* trackPtAllPt_;
-  MonitorElement* trackPtLowPt_;
-  MonitorElement* trackPtMedPt_;
-  MonitorElement* trackPtHigPt_;
+  MonitorElement *trackPtAllPt_;
+  MonitorElement *trackPtLowPt_;
+  MonitorElement *trackPtMedPt_;
+  MonitorElement *trackPtHigPt_;
 
-  MonitorElement* trackPtBarrel_;
-  MonitorElement* trackPtBarend_;
-  MonitorElement* trackPtEndcap_;
+  MonitorElement *trackPtBarrel_;
+  MonitorElement *trackPtBarend_;
+  MonitorElement *trackPtEndcap_;
 
-  MonitorElement* trackChi2ndofAllPt_;
-  MonitorElement* trackChi2ndofLowPt_;
-  MonitorElement* trackChi2ndofMedPt_;
-  MonitorElement* trackChi2ndofHigPt_;
+  MonitorElement *trackChi2ndofAllPt_;
+  MonitorElement *trackChi2ndofLowPt_;
+  MonitorElement *trackChi2ndofMedPt_;
+  MonitorElement *trackChi2ndofHigPt_;
 
-  MonitorElement* trackAlgo_;
-  MonitorElement* trackAlgoOnlyMiss_;
-  MonitorElement* trackOriginalAlgo_;
-  MonitorElement* trackOriginalAlgoOnlyMiss_;
-
+  MonitorElement *trackAlgo_;
+  MonitorElement *trackAlgoOnlyMiss_;
+  MonitorElement *trackOriginalAlgo_;
+  MonitorElement *trackOriginalAlgoOnlyMiss_;
 };
 #endif

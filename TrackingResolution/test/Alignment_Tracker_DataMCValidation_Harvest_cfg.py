@@ -9,6 +9,16 @@ options.register ('layersThreshold',
                   VarParsing.multiplicity.singleton, # singleton or list
                   VarParsing.varType.int,          # string, int, or float
                   "Number of threshold layers (from 3 to 8 so far)")
+options.register ('isMC',
+                  'True', # default value
+                  VarParsing.multiplicity.singleton, # singleton or list
+                  VarParsing.varType.string,          # string, int, or float
+                  "Runs MC (starting from RECO) or Data (starting from RAW) config")
+options.register ('isPU',
+                  'False', # default value
+                  VarParsing.multiplicity.singleton, # singleton or list
+                  VarParsing.varType.string,          # string, int, or float
+                  "Run MC events with or without PU")
 
 options.parseArguments()
 
@@ -31,8 +41,13 @@ process.maxEvents = cms.untracked.PSet(
 
 filenames = []
 
+MCorData = ""
+if options.isMC == "True": MCorData = "MC"
+else: MCorData = "Data"
+if options.isMC == "True" and options.isPU == "True": MCorData = "MCPU"
+
 for i in range(len(options.inputFiles)):
-    filenames.append('file:alignmentReRECO_definitive_allRECO_DQMAlignment_'+str(options.layersThreshold)+'layers_'+options.inputFiles[i]+'.root')
+    filenames.append('file:'+MCorData+'_alignmentReRECO_definitive_allRECO_DQMAlignment_'+str(options.layersThreshold)+'layers_'+options.inputFiles[i]+'.root')
 
 # Input source
 process.source = cms.Source("PoolSource",

@@ -1,5 +1,12 @@
+# Auto generated configuration file
+# using: 
+# Revision: 1.19 
+# Source: /local/reps/CMSSW/CMSSW/Configuration/Applications/python/ConfigBuilder.py,v 
+# with command line options: RECO --data --eventcontent RECO --datatier RECO --conditions 124X_dataRun3_v15 --step RAW2DIGI,RECO --era Run3 --filein file:testin.root --fileout file:test.root --python_filename test_cfg.py --scenario pp --no_exec -n 100
 import sys, os
 import FWCore.ParameterSet.Config as cms
+
+from Configuration.Eras.Era_Run3_cff import Run3
 from DQMServices.Core.DQMEDAnalyzer import DQMEDAnalyzer
 from FWCore.ParameterSet.VarParsing import VarParsing
 
@@ -10,7 +17,6 @@ options.register ('layersThreshold',
                   VarParsing.multiplicity.singleton, # singleton or list
                   VarParsing.varType.int,          # string, int, or float
                   "Number of threshold layers (from 3 to 8 so far)")
-
 options.register ('numEvents',
                   -1, # default value
                   VarParsing.multiplicity.singleton, # singleton or list
@@ -19,7 +25,7 @@ options.register ('numEvents',
 
 options.parseArguments()
 
-process = cms.Process('DQM')
+process = cms.Process('DQM',Run3)
 
 # import of standard configurations
 process.load('Configuration.StandardSequences.Services_cff')
@@ -27,40 +33,60 @@ process.load('SimGeneral.HepPDTESSource.pythiapdt_cfi')
 process.load('FWCore.MessageService.MessageLogger_cfi')
 process.load('Configuration.EventContent.EventContent_cff')
 process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
-process.load('Configuration.StandardSequences.MagneticField_AutoFromDBCurrent_cff')
-process.load('DQMOffline.Configuration.DQMOffline_cff')
-process.load('Configuration.StandardSequences.Reconstruction_cff')
+process.load('Configuration.StandardSequences.MagneticField_cff')
+process.load('Configuration.StandardSequences.RawToDigi_Data_cff')
+process.load('Configuration.StandardSequences.Reconstruction_Data_cff')
 process.load('Configuration.StandardSequences.EndOfProcess_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(options.numEvents)
+    input = cms.untracked.int32(options.numEvents),
+    output = cms.optional.untracked.allowed(cms.int32,cms.PSet)
 )
-
-filenames = []
-
-for i in range(1):
-    #filenames.append('file:/eos/user/b/borzari/TrackingRootFile/RelValZMM_1260_GEN_SIM_RECO.root')
-    filenames.append('/store/relval/CMSSW_12_6_0_pre3/RelValZMM_14/GEN-SIM-RECO/125X_mcRun3_2022_realistic_v3-v1/2580000/7dd1dbfc-90c2-46c9-a57e-1fa715218c26.root')
-    filenames.append('/store/relval/CMSSW_12_6_0_pre3/RelValZMM_14/GEN-SIM-RECO/125X_mcRun3_2022_realistic_v3-v1/2580000/ac18f277-3b03-4b5d-b3d7-e81fb1608715.root')
 
 # Input source
 process.source = cms.Source("PoolSource",
-  secondaryFileNames = cms.untracked.vstring(),
-  fileNames = cms.untracked.vstring(
-    filenames
-  ),
+    fileNames = cms.untracked.vstring('/store/data/Run2022G/Muon/RAW/v1/000/362/433/00000/3ca58e4a-608f-4a72-a818-5872cfa9226b.root','/store/data/Run2022G/Muon/RAW/v1/000/362/433/00000/5352a227-51a3-41a4-8743-1d033dc51420.root'),
+    secondaryFileNames = cms.untracked.vstring()
 )
 
 process.options = cms.untracked.PSet(
-    SkipEvent = cms.untracked.vstring('ProductNotFound')
+    FailPath = cms.untracked.vstring(),
+    IgnoreCompletely = cms.untracked.vstring(),
+    Rethrow = cms.untracked.vstring(),
+    SkipEvent = cms.untracked.vstring(),
+    accelerators = cms.untracked.vstring('*'),
+    allowUnscheduled = cms.obsolete.untracked.bool,
+    canDeleteEarly = cms.untracked.vstring(),
+    deleteNonConsumedUnscheduledModules = cms.untracked.bool(True),
+    dumpOptions = cms.untracked.bool(False),
+    emptyRunLumiMode = cms.obsolete.untracked.string,
+    eventSetup = cms.untracked.PSet(
+        forceNumberOfConcurrentIOVs = cms.untracked.PSet(
+            allowAnyLabel_=cms.required.untracked.uint32
+        ),
+        numberOfConcurrentIOVs = cms.untracked.uint32(0)
+    ),
+    fileMode = cms.untracked.string('FULLMERGE'),
+    forceEventSetupCacheClearOnNewRun = cms.untracked.bool(False),
+    holdsReferencesToDeleteEarly = cms.untracked.VPSet(),
+    makeTriggerResults = cms.obsolete.untracked.bool,
+    modulesToIgnoreForDeleteEarly = cms.untracked.vstring(),
+    numberOfConcurrentLuminosityBlocks = cms.untracked.uint32(0),
+    numberOfConcurrentRuns = cms.untracked.uint32(1),
+    numberOfStreams = cms.untracked.uint32(0),
+    numberOfThreads = cms.untracked.uint32(8),
+    printDependencies = cms.untracked.bool(False),
+    sizeOfStackForThreadsInKB = cms.optional.untracked.uint32,
+    throwIfIllegalParameter = cms.untracked.bool(True),
+    wantSummary = cms.untracked.bool(False)
 )
 
 # Production Info
 process.configurationMetadata = cms.untracked.PSet(
-    version = cms.untracked.string('$Revision: 1.19 $'),
-    annotation = cms.untracked.string('step1 nevts:1'),
-    name = cms.untracked.string('Applications')
+    annotation = cms.untracked.string('DQM nevts:100'),
+    name = cms.untracked.string('Applications'),
+    version = cms.untracked.string('$Revision: 1.19 $')
 )
 
 # Output definition
@@ -68,7 +94,7 @@ process.configurationMetadata = cms.untracked.PSet(
 process.DQMoutput = cms.OutputModule("PoolOutputModule",
     splitLevel = cms.untracked.int32(0),
     outputCommands = process.DQMEventContent.outputCommands,
-    fileName = cms.untracked.string('file:alignmentReRECO_definitive_allRECO_DQMAlignment_'+str(options.layersThreshold)+'layers_'+options.outputFile),
+    fileName = cms.untracked.string('file:Data_alignmentReRECO_definitive_allRECO_DQMAlignment_'+str(options.layersThreshold)+'layers_'+options.outputFile),
     dataset = cms.untracked.PSet(
         filterName = cms.untracked.string(''),
         dataTier = cms.untracked.string('')
@@ -79,10 +105,13 @@ process.DQMoutput = cms.OutputModule("PoolOutputModule",
 
 # Other statements
 from Configuration.AlCa.GlobalTag import GlobalTag
-process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase1_2022_realistic', '')
+process.GlobalTag = GlobalTag(process.GlobalTag, '124X_dataRun3_v15', '')
 
-process.load("FWCore.MessageLogger.MessageLogger_cfi")
-process.MessageLogger.cerr.FwkReport.reportEvery = 2000
+# Path and EndPath definitions
+process.raw2digi_step = cms.Path(process.RawToDigi)
+process.reconstruction_step = cms.Path(process.reconstruction)
+process.endjob_step = cms.EndPath(process.endOfProcess)
+process.DQMoutput_step = cms.EndPath(process.DQMoutput)
 
 ###################################################################
 ## Load and Configure TrackRefitter
@@ -183,7 +212,7 @@ process.trackingResolution = DQMEDAnalyzer("TrackingResolutionAlignment",
     maxDrInput      = cms.untracked.double(0.01),
     minNumberOfLayersInput      = cms.untracked.int32(10),
     tracksInputTag     = cms.untracked.InputTag("TrackRefitter", "", "DQM"),
-    primVertexInputTag = cms.untracked.InputTag("offlinePrimaryVertices", "", "RECO"),
+    primVertexInputTag = cms.untracked.InputTag("offlinePrimaryVertices", "", "DQM"),
     tracksRerecoInputTag     = cms.untracked.InputTag("HitFilteredTracks", "", "DQM")
 )
 
@@ -203,11 +232,10 @@ process.p = cms.Path(process.RClusterSeq)
 if options.layersThreshold<3 or options.layersThreshold>8: process.analysis_step = cms.Path(process.MeasurementTrackerEvent*process.TrackRefitter*process.TrackerTrackHitFilter3*process.TrackerTrackHitFilter4*process.TrackerTrackHitFilter5*process.TrackerTrackHitFilter6*process.TrackerTrackHitFilter7*process.TrackerTrackHitFilter8*process.HitFilteredTracks3*process.HitFilteredTracks4*process.HitFilteredTracks5*process.HitFilteredTracks6*process.HitFilteredTracks7*process.HitFilteredTracks8*process.trackingResolution3*process.trackingResolution4*process.trackingResolution5*process.trackingResolution6*process.trackingResolution7*process.trackingResolution8)
 else: process.analysis_step = cms.Path(process.MeasurementTrackerEvent*process.TrackRefitter*process.TrackerTrackHitFilter*process.HitFilteredTracks*process.trackingResolution)
 
-process.endjob_step = cms.EndPath(process.endOfProcess)
-process.DQMoutput_step = cms.EndPath(process.DQMoutput)
-
 # Schedule definition
-process.schedule = cms.Schedule(process.p,process.analysis_step, process.endjob_step, process.DQMoutput_step)
+process.schedule = cms.Schedule(process.raw2digi_step,process.reconstruction_step,process.p,process.analysis_step,process.endjob_step,process.DQMoutput_step)
+from PhysicsTools.PatAlgos.tools.helpers import associatePatAlgosToolsTask
+associatePatAlgosToolsTask(process)
 
 #  Added: timing service (throughput measurement quite unreproduceable)
 process.Timing = cms.Service("Timing",
@@ -222,3 +250,14 @@ process.ThroughputService = cms.Service('ThroughputService',
     eventResolution = cms.untracked.uint32(1000),
     eventRange = cms.untracked.uint32(100)    # this is just an optimisation for the initial memory allocation
 )
+
+# Customisation from command line
+
+#Have logErrorHarvester wait for the same EDProducers to finish as those providing data for the OutputModule
+from FWCore.Modules.logErrorHarvester_cff import customiseLogErrorHarvesterUsingOutputCommands
+process = customiseLogErrorHarvesterUsingOutputCommands(process)
+
+# Add early deletion of temporary data products to reduce peak memory need
+from Configuration.StandardSequences.earlyDeleteSettings_cff import customiseEarlyDelete
+process = customiseEarlyDelete(process)
+# End adding early deletion

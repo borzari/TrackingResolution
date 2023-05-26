@@ -7,7 +7,6 @@
 #include <set>
 
 #include "FWCore/Framework/interface/Frameworkfwd.h"
-#include "FWCore/Framework/interface/EDAnalyzer.h"
 #include "FWCore/Framework/interface/Event.h"
 #include "DataFormats/TrackReco/interface/TrackFwd.h"
 #include "DataFormats/TrackReco/interface/Track.h"
@@ -27,17 +26,16 @@
 #include "HLTrigger/HLTcore/interface/HLTConfigProvider.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
 
-class TrackingResolutionAlignment : public DQMEDAnalyzer {
+class TrackingResolutionAlignment : public DQMEDAnalyzer
+{
 public:
-  TrackingResolutionAlignment( const edm::ParameterSet& );
+  TrackingResolutionAlignment(const edm::ParameterSet &);
 
 protected:
-
-  void analyze(edm::Event const& iEvent, edm::EventSetup const& iSetup) override;
+  void analyze(edm::Event const &iEvent, edm::EventSetup const &iSetup) override;
   void bookHistograms(DQMStore::IBooker &, edm::Run const &, edm::EventSetup const &) override;
 
 private:
-
   edm::ParameterSet parameters_;
 
   std::string moduleName_;
@@ -66,12 +64,11 @@ private:
   const edm::EDGetTokenT<std::vector<reco::Vertex>> primVertexToken;
   const edm::EDGetTokenT<std::vector<reco::Track>> tracksRerecoToken;
 
-  MonitorElement* trackPixelLayers_;
-  MonitorElement* trackTrackerLayers_;
-  MonitorElement* trackEfficiencyCalc_;
+  MonitorElement *trackPixelLayers_;
+  MonitorElement *trackTrackerLayers_;
+  MonitorElement *trackEfficiencyCalc_;
 
-  MonitorElement* trackPtAllPt_;
-  MonitorElement* trackChi2ndofAllPt_;
-
+  MonitorElement *trackPtAllPt_;
+  MonitorElement *trackChi2ndofAllPt_;
 };
 #endif

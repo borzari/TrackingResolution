@@ -14,6 +14,8 @@ parser = argparse.ArgumentParser(description='Passing mass and ctau to submit co
 parser.add_argument('--step', dest='step', default='RECO,reRECO,DQM,Harvest', help='Steps of tracking resolution (default [RECO,reRECO,DQM,Harvest])')
 parser.add_argument('--layersThreshold', dest='layersThreshold', default=3, help='Number of threshold layers (from 3 to 8 so far)')
 parser.add_argument('--numEvents', dest='numEvents', default=-1, help='Number of events to run')
+parser.add_argument('--isMC', dest='isMC', default='True', help='Runs MC (starting from RECO) or Data (starting from RAW) config')
+parser.add_argument('--isPU', dest='isPU', default='False', help='Run MC events with or without PU')
 
 args = parser.parse_args()
 
@@ -71,6 +73,9 @@ elif find(stepList,'Harvest')==False:
 print(stepList)
 
 layersThreshold = args.layersThreshold
+isMC = args.isMC
+isPU = args.isPU
+numEvents = args.numEvents
 
 for step in stepList:
     if step == 'RECO':
@@ -79,15 +84,17 @@ for step in stepList:
     if step == 'reRECO':
         print("Running reRECO")
         os.system("cmsRun python/reRECO.py inputFiles=OUTPUT_FILE_NAME outputFile=OUTPUT_FILE_NAME layersThreshold="+layersThreshold)
-        #print("cmsRun python/reRECO.py inputFiles=OUTPUT_FILE_NAME outputFile=OUTPUT_FILE_NAME layersThreshold="+layersThreshold)
     if step == 'DQM':
         print("Running DQM")
-        os.system("cmsRun test/Alignment_Tracker_DataMCValidation_cfg.py inputFiles=OUTPUT_FILE_NAME outputFile=OUTPUT_FILE_NAME numEvents="+str(args.numEvents)+" layersThreshold="+layersThreshold)
-        #print("cmsRun test/Tracker_DataMCValidation_cfg.py inputFiles=OUTPUT_FILE_NAME outputFile=OUTPUT_FILE_NAME layersThreshold="+layersThreshold)
+        if isMC=='True':os.system("cmsRun test/MC_Alignment_Tracker_DataMCValidation_cfg.py inputFiles=OUTPUT_FILE_NAME outputFile=OUTPUT_FILE_NAME numEvents="+str(numEvents)+" layersThreshold="+layersThreshold+" isPU="+isPU)
+        else: os.system("cmsRun test/Data_Alignment_Tracker_DataMCValidation_cfg.py inputFiles=OUTPUT_FILE_NAME outputFile=OUTPUT_FILE_NAME numEvents="+str(numEvents)+" layersThreshold="+layersThreshold)
     if step == 'Harvest':
         harvestFile = 'Harvest_Alignment'
         if int(layersThreshold) < 3 or int(layersThreshold) > 8: harvestFile = harvestFile+'_allLayers'
         else: harvestFile = harvestFile+'_'+layersThreshold+'layers'
+        if isMC=='True':
+            if isPU=='True': harvestFile = "MCPU_" + harvestFile
+            else: harvestFile = "MC_" + harvestFile
+        else: harvestFile = "Data_" + harvestFile
         print("Harvesting histograms and saving as "+harvestFile+".root")
-        os.system("cmsRun test/Alignment_Tracker_DataMCValidation_Harvest_cfg.py inputFiles=OUTPUT_FILE_NAME layersThreshold="+layersThreshold+"; mv DQM_*__Global__CMSSW_X_Y_Z__RECO.root "+harvestFile+".root")
-        #print("cmsRun test/Tracker_DataMCValidation_Harvest_cfg.py inputFiles=OUTPUT_FILE_NAME layersThreshold="+layersThreshold+"; mv DQM_V0001_R000000001__Global__CMSSW_X_Y_Z__RECO.root "+harvestFile+".root")
+        os.system("cmsRun test/Alignment_Tracker_DataMCValidation_Harvest_cfg.py inputFiles=OUTPUT_FILE_NAME layersThreshold="+layersThreshold+" isMC="+isMC+" isPU="+isPU+"; mv DQM_*__Global__CMSSW_X_Y_Z__RECO.root "+harvestFile+".root")
