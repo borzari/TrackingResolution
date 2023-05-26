@@ -164,6 +164,7 @@ void TrackingResolutionAlignment::analyze(edm::Event const &iEvent, edm::EventSe
                 {
                   std::cout << iEvent.id() << std::endl;
                   std::cout << "Tracker layers of short track: " << track_trackerLayersWithMeasurement << std::endl;
+                  std::cout << "Number of layers remaining: " << hitsRemain_int << std::endl;
                   std::cout << "pT resolution: " << 1.0 * track_rereco->pt() / track->pt() << std::endl;
                   std::cout << "pT of short track: " << 1.0 * track_rereco->pt() << std::endl;
                   std::cout << "eta of short track: " << 1.0 * track_rereco->eta() << std::endl;
@@ -216,13 +217,13 @@ void TrackingResolutionAlignment::analyze(edm::Event const &iEvent, edm::EventSe
                       // but allows for hits being in the same layers, e. g., layer 1 of PXB and layer 1 of PXF, in the case of high |eta| tracks
                       if (!hit.isValid())
                       {
-                        std::cout << "OIA1" << std::endl;
+                        std::cout << "hit.isValid() is false" << std::endl;
                         continue;
                       }
 
                       if (!(hitpattern.validHitFilter(pHit)))
                       {
-                        std::cout << "OIA2" << std::endl;
+                        std::cout << "hitpattern.validHitFilter(sel_pHit) is false" << std::endl;
                         continue;
                       }
                       if (hitpattern.getSubStructure(pHit) == 1 && !((thisLayer == prevLayer) && (thisSubStruct == prevSubStruct)))
@@ -314,6 +315,8 @@ void TrackingResolutionAlignment::analyze(edm::Event const &iEvent, edm::EventSe
                     std::cout << "de-referenced track extra" << std::endl;
                   }
                 }
+
+                std::cout << "===================================" << std::endl;
 
                 trackPixelLayers_->Fill(track_pixelLayersWithMeasurement);
                 trackTrackerLayers_->Fill(track_trackerLayersWithMeasurement);

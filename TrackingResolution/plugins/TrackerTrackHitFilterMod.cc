@@ -819,7 +819,6 @@ namespace reco
         ownHits.push_back(*hitsBegin);
         std::cout << "ownHits.size(): " << ownHits.size() << std::endl;
       }
-      std::cout << "==============================" << std::endl;
       // std::cout << "ownHits.size(): " << ownHits.size() << std::endl;
 
       TrackCandidate cand(ownHits, seed, state, tk.seedRef());
