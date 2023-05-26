@@ -1,22 +1,22 @@
 # Tracking Resolution
 
-This is a repository compiling all the tracking pT resolution work. Please, use **CMSSW 13_1_0_pre2** for the tests. Every step is performed for each value of layer threshold (from 3 to 8 for now).
+This is a repository compiling some of the tracking pT resolution work. Please, use **CMSSW 13_1_0_pre2** for the tests. Every step is performed for each value of layer threshold (from 3 to 8 for now).
 
-Running the code will filter events with "good muons" (in **GoodRecoMuonsFilter.cc**), creates a collection of good muon tracks (in **RClusterProducerAlignment.cc**), shorten those tracks (in **TrackingResolutionAlignment.cc**) and print some information/produce some histograms (in **TrackingResolutionAlignment.cc**). The histograms will not be useful to check the bug.
+Running the code will filter events with "good muons" (in **GoodRecoMuonsFilter.cc**), creates a collection of good muon tracks (in **RClusterProducerAlignment.cc**), shorten those tracks (in **TrackerTrackHitFilterMod.cc**) and print some information/produce some histograms (in **TrackingResolutionAlignment.cc**). The histograms will not be useful to check the bug.
 
-To reproduce the bug, there is only a few steps needed. Inside the `TrackingResolution/TrackingResolution/` folder you should:
+To reproduce the bug, there are only a few steps needed. Inside the `TrackingResolution/TrackingResolution/` folder you should:
   - Compile the modules `scram b -j 8`;
   - Execute the DQM step in one command with:
      - `python3 test/runAllAlignment.py --step=DQM --layersThreshold=0 --numEvents=15292 --isMC=True --isPU=False`;
 
 Only one event will be executed (this bug is "rare"; I only observed it in 2 events out of 15292) and it will print on the screen a few information:
-  - A few lines related to the validity and substructure/layer of the hits, checked in module **TrackerTrackHitFilterMod.cc**
+  - A few lines related to the validity and substructure/layer of the hits, starting with `isFirstValidHitInLayerAux`, checked in module **TrackerTrackHitFilterMod.cc**
      - The size of **ownHits** is the amount of hits used to create the track candidate that will be refitted
-  - Then, in the following order: run/lumi/event information; number of tracker layers with measurement of the shortened track; number of layers of measurement requested for the short track to have; pT resolution; pT/eta/phi of short track; chi2/ndof of short track
+  - Then, in the following order: run/lumi/event information; number of tracker layers with measurement of the shortened track; number of layers of measurement requested for the short track to have (this and previous line number should match if everything is correct); pT resolution; pT/eta/phi of short track; chi2/ndof of short track
   - Number of layers in each substructure that have a valid measurement in the order:
      - pxb  pxf  tib  tid  tob  tec -- total
 
-It is possible to notice that, for the layer threshold of 8 (full output below), the short track only has 7 layers with measurement, and the missing hit is compatible with the 4th layer of pxb that is missing, although it is added to the **ownHits** vector as a hit of the track candidate. This doesn't happen for any of the layer thresholds below 8 (it can be checked by reproducing the bug), which might point to some bug.
+It is possible to notice that, for the layer threshold of 8 (full output below), the shortened track only has 7 layers with measurement, and the missing hit is compatible with the 4th layer of pxb, even though it is added to the **ownHits** vector as a hit of the track candidate. This doesn't happen for any of the layer thresholds below 8 (it can be checked by reproducing the bug), which might point to some bug.
 
 ```
 isFirstValidHitInLayerAux = 1 -- thisSubStruct = 1 -- thisLayer = 1 -- isNotValidVec[int(isNotValidVec.size()) - 1] = 0
