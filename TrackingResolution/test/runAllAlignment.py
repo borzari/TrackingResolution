@@ -86,8 +86,7 @@ for step in stepList:
         os.system("cmsRun python/reRECO.py inputFiles=OUTPUT_FILE_NAME outputFile=OUTPUT_FILE_NAME layersThreshold="+layersThreshold)
     if step == 'DQM':
         print("Running DQM")
-        if isMC=='True':os.system("cmsRun test/MC_Alignment_Tracker_DataMCValidation_cfg.py inputFiles=OUTPUT_FILE_NAME outputFile=OUTPUT_FILE_NAME numEvents="+str(numEvents)+" layersThreshold="+layersThreshold+" isPU="+isPU)
-        else: os.system("cmsRun test/Data_Alignment_Tracker_DataMCValidation_cfg.py inputFiles=OUTPUT_FILE_NAME outputFile=OUTPUT_FILE_NAME numEvents="+str(numEvents)+" layersThreshold="+layersThreshold)
+        os.system("cmsRun test/Alignment_Tracker_DataMCValidation_cfg.py inputFiles=OUTPUT_FILE_NAME outputFile=OUTPUT_FILE_NAME numEvents="+str(numEvents)+" layersThreshold="+layersThreshold+" isMC="+isMC+" isPU="+isPU)
     if step == 'Harvest':
         harvestFile = 'Harvest_Alignment'
         if int(layersThreshold) < 3 or int(layersThreshold) > 8: harvestFile = harvestFile+'_allLayers'

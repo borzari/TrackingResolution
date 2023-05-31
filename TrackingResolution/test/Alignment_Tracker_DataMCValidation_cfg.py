@@ -22,6 +22,16 @@ options.register ('numEvents',
                   VarParsing.multiplicity.singleton, # singleton or list
                   VarParsing.varType.int,          # string, int, or float
                   "Number of events to run")
+options.register ('isPU',
+                  'False', # default value
+                  VarParsing.multiplicity.singleton, # singleton or list
+                  VarParsing.varType.string,          # string, int, or float
+                  "Run MC events with or without PU")
+options.register ('isMC',
+                  'False', # default value
+                  VarParsing.multiplicity.singleton, # singleton or list
+                  VarParsing.varType.string,          # string, int, or float
+                  "Run MC or Data events")
 
 options.parseArguments()
 
@@ -44,10 +54,25 @@ process.maxEvents = cms.untracked.PSet(
     output = cms.optional.untracked.allowed(cms.int32,cms.PSet)
 )
 
+filenames = []
+
+filepath = "filesMC.txt"
+if options.isMC == 'True':
+    if options.isPU == 'True': filepath = "filesMCPU.txt"
+else: filepath = "filesData.txt"
+
+f = open(filepath,"r")
+lines = f.readlines()
+
+for line in lines:
+    filenames.append(line.strip())
+
 # Input source
 process.source = cms.Source("PoolSource",
-    fileNames = cms.untracked.vstring('/store/data/Run2022G/Muon/RAW/v1/000/362/433/00000/3ca58e4a-608f-4a72-a818-5872cfa9226b.root','/store/data/Run2022G/Muon/RAW/v1/000/362/433/00000/5352a227-51a3-41a4-8743-1d033dc51420.root'),
-    secondaryFileNames = cms.untracked.vstring()
+  secondaryFileNames = cms.untracked.vstring(),
+  fileNames = cms.untracked.vstring(
+    filenames
+  ),
 )
 
 process.options = cms.untracked.PSet(
@@ -90,11 +115,14 @@ process.configurationMetadata = cms.untracked.PSet(
 )
 
 # Output definition
-
+eventType = "MC"
+if options.isMC == 'True':
+    if options.isPU == 'True': eventType = "MCPU"
+else: eventType = "Data"
 process.DQMoutput = cms.OutputModule("PoolOutputModule",
     splitLevel = cms.untracked.int32(0),
     outputCommands = process.DQMEventContent.outputCommands,
-    fileName = cms.untracked.string('file:Data_alignmentReRECO_definitive_allRECO_DQMAlignment_'+str(options.layersThreshold)+'layers_'+options.outputFile),
+    fileName = cms.untracked.string('file:'+eventType+'_DQMAlignment_'+str(options.layersThreshold)+'layers_'+options.outputFile),
     dataset = cms.untracked.PSet(
         filterName = cms.untracked.string(''),
         dataTier = cms.untracked.string('')
@@ -104,8 +132,15 @@ process.DQMoutput = cms.OutputModule("PoolOutputModule",
 # Additional output definition
 
 # Other statements
+gtString = 'auto:phase1_2022_realistic'
+if options.isMC == 'False': gtString = '124X_dataRun3_v15'
 from Configuration.AlCa.GlobalTag import GlobalTag
-process.GlobalTag = GlobalTag(process.GlobalTag, '124X_dataRun3_v15', '')
+process.GlobalTag = GlobalTag(process.GlobalTag, gtString, '')
+
+process.load("FWCore.MessageLogger.MessageLogger_cfi")
+evtsToReport = 2000
+if options.isMC == 'False': evtsToReport = 1
+process.MessageLogger.cerr.FwkReport.reportEvery = evtsToReport
 
 # Path and EndPath definitions
 process.raw2digi_step = cms.Path(process.RawToDigi)
@@ -187,6 +222,8 @@ if options.layersThreshold<3 or options.layersThreshold>8:
             )
         )
 
+offPVTag = "RECO"
+if options.isMC == 'False': offPVTag = "DQM"
 # Tracker Data MC validation suite
 process.trackingResolution = DQMEDAnalyzer("TrackingResolutionAlignment",
     moduleName        = cms.untracked.string("testTrackingResolution"),
@@ -204,7 +241,7 @@ process.trackingResolution = DQMEDAnalyzer("TrackingResolutionAlignment",
     maxDrInput      = cms.untracked.double(0.01),
     minNumberOfLayersInput      = cms.untracked.int32(10),
     tracksInputTag     = cms.untracked.InputTag("TrackRefitter", "", "DQM"),
-    primVertexInputTag = cms.untracked.InputTag("offlinePrimaryVertices", "", "DQM"),
+    primVertexInputTag = cms.untracked.InputTag("offlinePrimaryVertices", "", offPVTag),
     tracksRerecoInputTag     = cms.untracked.InputTag("HitFilteredTracks", "", "DQM")
 )
 
@@ -225,7 +262,8 @@ if options.layersThreshold<3 or options.layersThreshold>8: process.analysis_step
 else: process.analysis_step = cms.Path(process.MeasurementTrackerEvent*process.TrackRefitter*process.TrackerTrackHitFilter*process.HitFilteredTracks*process.trackingResolution)
 
 # Schedule definition
-process.schedule = cms.Schedule(process.raw2digi_step,process.reconstruction_step,process.p,process.analysis_step,process.endjob_step,process.DQMoutput_step)
+process.schedule = cms.Schedule(process.p,process.analysis_step,process.endjob_step,process.DQMoutput_step)
+if options.isMC == 'False': process.schedule = cms.Schedule(process.raw2digi_step,process.reconstruction_step,process.p,process.analysis_step,process.endjob_step,process.DQMoutput_step)
 from PhysicsTools.PatAlgos.tools.helpers import associatePatAlgosToolsTask
 associatePatAlgosToolsTask(process)
 

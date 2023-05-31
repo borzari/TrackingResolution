@@ -41,13 +41,13 @@ process.maxEvents = cms.untracked.PSet(
 
 filenames = []
 
-MCorData = ""
-if options.isMC == "True": MCorData = "MC"
-else: MCorData = "Data"
-if options.isMC == "True" and options.isPU == "True": MCorData = "MCPU"
+eventType = "MC"
+if options.isMC == 'True':
+    if options.isPU == 'True': eventType = "MCPU"
+else: eventType = "Data"
 
 for i in range(len(options.inputFiles)):
-    filenames.append('file:'+MCorData+'_alignmentReRECO_definitive_allRECO_DQMAlignment_'+str(options.layersThreshold)+'layers_'+options.inputFiles[i]+'.root')
+    filenames.append('file:'+eventType+'_DQMAlignment_'+str(options.layersThreshold)+'layers_'+options.inputFiles[i]+'.root')
 
 # Input source
 process.source = cms.Source("PoolSource",
