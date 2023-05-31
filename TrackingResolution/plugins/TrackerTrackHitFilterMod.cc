@@ -723,11 +723,11 @@ namespace reco
 
       if (int(isNotValidVec.size()) > 1)
       {
-        std::cout << "isFirstValidHitInLayerAux = " << isFirstValidHitInLayerAux << " -- thisSubStruct = " << thisSubStruct << " -- thisLayer = " << thisLayer << " -- isNotValidVec[int(isNotValidVec.size()) - 2] = " << isNotValidVec[int(isNotValidVec.size()) - 2] << " -- isNotValidVec[int(isNotValidVec.size()) - 1] = " << isNotValidVec[int(isNotValidVec.size()) - 1] << std::endl;
+        // std::cout << "isFirstValidHitInLayerAux = " << isFirstValidHitInLayerAux << " -- thisSubStruct = " << thisSubStruct << " -- thisLayer = " << thisLayer << " -- isNotValidVec[int(isNotValidVec.size()) - 2] = " << isNotValidVec[int(isNotValidVec.size()) - 2] << " -- isNotValidVec[int(isNotValidVec.size()) - 1] = " << isNotValidVec[int(isNotValidVec.size()) - 1] << std::endl;
       } // For debugging
       else
       {
-        std::cout << "isFirstValidHitInLayerAux = " << isFirstValidHitInLayerAux << " -- thisSubStruct = " << thisSubStruct << " -- thisLayer = " << thisLayer << " -- isNotValidVec[int(isNotValidVec.size()) - 1] = " << isNotValidVec[int(isNotValidVec.size()) - 1] << std::endl;
+        // std::cout << "isFirstValidHitInLayerAux = " << isFirstValidHitInLayerAux << " -- thisSubStruct = " << thisSubStruct << " -- thisLayer = " << thisLayer << " -- isNotValidVec[int(isNotValidVec.size()) - 1] = " << isNotValidVec[int(isNotValidVec.size()) - 1] << std::endl;
       } // For debugging
 
       return isFirstValidHitInLayerAux;
@@ -817,9 +817,9 @@ namespace reco
         }
 
         ownHits.push_back(*hitsBegin);
-        std::cout << "ownHits.size(): " << ownHits.size() << std::endl;
+        // std::cout << "ownHits.size(): " << ownHits.size() << std::endl;
       }
-      std::cout << "==============================" << std::endl;
+      // std::cout << "==============================" << std::endl;
       // std::cout << "ownHits.size(): " << ownHits.size() << std::endl;
 
       TrackCandidate cand(ownHits, seed, state, tk.seedRef());

@@ -162,13 +162,13 @@ void TrackingResolutionAlignment::analyze(edm::Event const &iEvent, edm::EventSe
 
                 if (track_trackerLayersWithMeasurement < 8 * hitsRemain_int)
                 {
-                  std::cout << iEvent.id() << std::endl;
-                  std::cout << "Tracker layers of short track: " << track_trackerLayersWithMeasurement << std::endl;
-                  std::cout << "pT resolution: " << 1.0 * track_rereco->pt() / track->pt() << std::endl;
-                  std::cout << "pT of short track: " << 1.0 * track_rereco->pt() << std::endl;
-                  std::cout << "eta of short track: " << 1.0 * track_rereco->eta() << std::endl;
-                  std::cout << "phi of short track: " << 1.0 * track_rereco->phi() << std::endl;
-                  std::cout << "chi2/ndof: " << 1.0 * track_rereco->chi2() / track_rereco->ndof() << std::endl;
+                  // std::cout << iEvent.id() << std::endl;
+                  // std::cout << "Tracker layers of short track: " << track_trackerLayersWithMeasurement << std::endl;
+                  // std::cout << "pT resolution: " << 1.0 * track_rereco->pt() / track->pt() << std::endl;
+                  // std::cout << "pT of short track: " << 1.0 * track_rereco->pt() << std::endl;
+                  // std::cout << "eta of short track: " << 1.0 * track_rereco->eta() << std::endl;
+                  // std::cout << "phi of short track: " << 1.0 * track_rereco->phi() << std::endl;
+                  // std::cout << "chi2/ndof: " << 1.0 * track_rereco->chi2() / track_rereco->ndof() << std::endl;
                   reco::HitPattern hitpattern = track_rereco->hitPattern();
                   reco::HitPattern selTrack_hitpattern = track->hitPattern();
                   try
@@ -216,13 +216,13 @@ void TrackingResolutionAlignment::analyze(edm::Event const &iEvent, edm::EventSe
                       // but allows for hits being in the same layers, e. g., layer 1 of PXB and layer 1 of PXF, in the case of high |eta| tracks
                       if (!hit.isValid())
                       {
-                        std::cout << "OIA1" << std::endl;
+                        // std::cout << "hit.isValid() is false" << std::endl;
                         continue;
                       }
 
                       if (!(hitpattern.validHitFilter(pHit)))
                       {
-                        std::cout << "OIA2" << std::endl;
+                        // std::cout << "hitpattern.validHitFilter(pHit) is false" << std::endl;
                         continue;
                       }
                       if (hitpattern.getSubStructure(pHit) == 1 && !((thisLayer == prevLayer) && (thisSubStruct == prevSubStruct)))
@@ -250,7 +250,7 @@ void TrackingResolutionAlignment::analyze(edm::Event const &iEvent, edm::EventSe
                         tecLayers++;
                       }
 
-                      std::cout << "Short track: " << pxbLayers << " " << pxfLayers << " " << tibLayers << " " << tidLayers << " " << tobLayers << " " << tecLayers << " -- " << pxbLayers + pxfLayers + tibLayers + tidLayers + tobLayers + tecLayers << std::endl;
+                      // std::cout << "Short track: " << pxbLayers << " " << pxfLayers << " " << tibLayers << " " << tidLayers << " " << tobLayers << " " << tecLayers << " -- " << pxbLayers + pxfLayers + tibLayers + tidLayers + tobLayers + tecLayers << std::endl;
                     }
 
                     // if(checkHits){
@@ -272,13 +272,13 @@ void TrackingResolutionAlignment::analyze(edm::Event const &iEvent, edm::EventSe
                       // but allows for hits being in the same layers, e. g., layer 1 of PXB and layer 1 of PXF, in the case of high |eta| tracks
                       if (!sel_hit.isValid())
                       {
-                        std::cout << "sel_hit.isValid() is false" << std::endl;
+                        // std::cout << "sel_hit.isValid() is false" << std::endl;
                         continue;
                       }
 
                       if (!(selTrack_hitpattern.validHitFilter(sel_pHit)))
                       {
-                        std::cout << "selTrack_hitpattern.validHitFilter(sel_pHit) is false" << std::endl;
+                        // std::cout << "selTrack_hitpattern.validHitFilter(sel_pHit) is false" << std::endl;
                         continue;
                       }
                       if (selTrack_hitpattern.getSubStructure(sel_pHit) == 1 && !((sel_thisLayer == sel_prevLayer) && (sel_thisSubStruct == sel_prevSubStruct)))
@@ -306,7 +306,7 @@ void TrackingResolutionAlignment::analyze(edm::Event const &iEvent, edm::EventSe
                         sel_tecLayers++;
                       }
 
-                      std::cout << "Track: " << sel_pxbLayers << " " << sel_pxfLayers << " " << sel_tibLayers << " " << sel_tidLayers << " " << sel_tobLayers << " " << sel_tecLayers << " -- " << sel_pxbLayers + sel_pxfLayers + sel_tibLayers + sel_tidLayers + sel_tobLayers + sel_tecLayers << std::endl;
+                      // std::cout << "Track: " << sel_pxbLayers << " " << sel_pxfLayers << " " << sel_tibLayers << " " << sel_tidLayers << " " << sel_tobLayers << " " << sel_tecLayers << " -- " << sel_pxbLayers + sel_pxfLayers + sel_tibLayers + sel_tidLayers + sel_tobLayers + sel_tecLayers << std::endl;
                     }
                   }
                   catch (...)

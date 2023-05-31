@@ -1,6 +1,6 @@
 # Tracking Resolution
 
-This is a repository compiling all the tracking pT resolution work. Please, use **CMSSW 12_6_0_pre3** for the tests. Every step is performed for each value of layer threshold (from 3 to 8 for now).
+This is a repository compiling all the tracking pT resolution work. Please, use **CMSSW 13_1_0_pre2** for the tests. Every step is performed for each value of layer threshold (from 3 to 8 for now).
 
 To produce the histograms, there is only a few steps needed. Inside the `TrackingResolution/TrackingResolution/` folder you should:
   - Compile the modules `scram b -j 8`;

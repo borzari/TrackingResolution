@@ -45,7 +45,7 @@ filenames = []
 
 filepath = ""
 if options.isPU == 'True': filepath = "filesMCPU.txt"
-else: filepath = "filesMC_test.txt"
+else: filepath = "filesMC.txt"
 
 f = open(filepath,"r")
 lines = f.readlines()
@@ -59,7 +59,7 @@ process.source = cms.Source("PoolSource",
   fileNames = cms.untracked.vstring(
     filenames
   ),
-  eventsToProcess = cms.untracked.VEventRange('1:17393'),#,'1:4543'),
+#   eventsToProcess = cms.untracked.VEventRange('1:17393'),#,'1:4543'),
 )
 
 process.options = cms.untracked.PSet(
@@ -80,7 +80,7 @@ if options.isPU == 'True': PUorNot = "MCPU"
 process.DQMoutput = cms.OutputModule("PoolOutputModule",
     splitLevel = cms.untracked.int32(0),
     outputCommands = process.DQMEventContent.outputCommands,
-    fileName = cms.untracked.string('file:'+PUorNot+'_alignmentReRECO_definitive_allRECO_DQMAlignment_'+str(options.layersThreshold)+'layers_'+options.outputFile),
+    fileName = cms.untracked.string('file:'+PUorNot+'_TrajectoryFalse_alignmentReRECO_definitive_allRECO_DQMAlignment_'+str(options.layersThreshold)+'layers_'+options.outputFile),
     dataset = cms.untracked.PSet(
         filterName = cms.untracked.string(''),
         dataTier = cms.untracked.string('')
@@ -154,7 +154,7 @@ process.HitFilteredTracks = cms.EDProducer("TrackProducer",
     Fitter = cms.string('KFFittingSmootherWithOutliersRejectionAndRK'),
     useHitsSplitting = cms.bool(False),
     alias = cms.untracked.string('ctfWithMaterialTracks'),
-    TrajectoryInEvent = cms.bool(True),
+    TrajectoryInEvent = cms.bool(False),
     TTRHBuilder = cms.string('WithAngleAndTemplate'),
     AlgorithmName = cms.string('undefAlgorithm'),
     Propagator = cms.string('RungeKuttaTrackerPropagator'),
