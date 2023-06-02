@@ -19,6 +19,11 @@ options.register ('isPU',
                   VarParsing.multiplicity.singleton, # singleton or list
                   VarParsing.varType.string,          # string, int, or float
                   "Run MC events with or without PU")
+options.register ('isAOD',
+                  'False', # default value
+                  VarParsing.multiplicity.singleton, # singleton or list
+                  VarParsing.varType.string,          # string, int, or float
+                  "Run Data events that are AOD or RAW")
 
 options.parseArguments()
 
@@ -44,7 +49,9 @@ filenames = []
 eventType = "MC"
 if options.isMC == 'True':
     if options.isPU == 'True': eventType = "MCPU"
-else: eventType = "Data"
+else:
+    if options.isAOD == 'True': eventType = "DataAOD"
+    else: eventType = "Data"
 
 for i in range(len(options.inputFiles)):
     filenames.append('file:'+eventType+'_DQMAlignment_'+str(options.layersThreshold)+'layers_'+options.inputFiles[i]+'.root')

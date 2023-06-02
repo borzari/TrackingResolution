@@ -16,6 +16,7 @@ parser.add_argument('--layersThreshold', dest='layersThreshold', default=3, help
 parser.add_argument('--numEvents', dest='numEvents', default=-1, help='Number of events to run')
 parser.add_argument('--isMC', dest='isMC', default='True', help='Runs MC (starting from RECO) or Data (starting from RAW) config')
 parser.add_argument('--isPU', dest='isPU', default='False', help='Run MC events with or without PU')
+parser.add_argument('--isAOD', dest='isAOD', default='False', help='Run Data events that are AOD or RAW')
 
 args = parser.parse_args()
 
@@ -75,6 +76,7 @@ print(stepList)
 layersThreshold = args.layersThreshold
 isMC = args.isMC
 isPU = args.isPU
+isAOD = args.isAOD
 numEvents = args.numEvents
 
 for step in stepList:
@@ -86,7 +88,7 @@ for step in stepList:
         os.system("cmsRun python/reRECO.py inputFiles=OUTPUT_FILE_NAME outputFile=OUTPUT_FILE_NAME layersThreshold="+layersThreshold)
     if step == 'DQM':
         print("Running DQM")
-        os.system("cmsRun test/Alignment_Tracker_DataMCValidation_cfg.py inputFiles=OUTPUT_FILE_NAME outputFile=OUTPUT_FILE_NAME numEvents="+str(numEvents)+" layersThreshold="+layersThreshold+" isMC="+isMC+" isPU="+isPU)
+        os.system("cmsRun test/AOD_Alignment_Tracker_DataMCValidation_cfg.py inputFiles=OUTPUT_FILE_NAME outputFile=OUTPUT_FILE_NAME numEvents="+str(numEvents)+" layersThreshold="+layersThreshold+" isMC="+isMC+" isPU="+isPU+" isAOD="+isAOD)
     if step == 'Harvest':
         harvestFile = 'Harvest_Alignment'
         if int(layersThreshold) < 3 or int(layersThreshold) > 8: harvestFile = harvestFile+'_allLayers'
@@ -94,6 +96,8 @@ for step in stepList:
         if isMC=='True':
             if isPU=='True': harvestFile = "MCPU_" + harvestFile
             else: harvestFile = "MC_" + harvestFile
-        else: harvestFile = "Data_" + harvestFile
+        else: 
+            if isAOD=='True': harvestFile = "DataAOD_" + harvestFile
+            else: harvestFile = "Data_" + harvestFile
         print("Harvesting histograms and saving as "+harvestFile+".root")
-        os.system("cmsRun test/Alignment_Tracker_DataMCValidation_Harvest_cfg.py inputFiles=OUTPUT_FILE_NAME layersThreshold="+layersThreshold+" isMC="+isMC+" isPU="+isPU+"; mv DQM_*__Global__CMSSW_X_Y_Z__RECO.root "+harvestFile+".root")
+        os.system("cmsRun test/Alignment_Tracker_DataMCValidation_Harvest_cfg.py inputFiles=OUTPUT_FILE_NAME layersThreshold="+layersThreshold+" isMC="+isMC+" isPU="+isPU+" isAOD="+isAOD+"; mv DQM_*__Global__CMSSW_X_Y_Z__RECO.root "+harvestFile+".root")

@@ -21,9 +21,4 @@ goodMuons = cms.EDFilter(
     filter=cms.bool(True),
 )
 
-# for suf in range(3, 9):
-#     moduleLabel = "rCluster" + str(suf)
-#     vars()[moduleLabel] = rCluster.clone()
-#     RClusterTask.add(vars()[moduleLabel])
-
 RClusterSeq = cms.Sequence(goodMuons, RClusterTask)
