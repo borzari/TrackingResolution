@@ -620,132 +620,60 @@ namespace reco
     {
 
       reco::HitPattern hp = tk.hitPattern();
-      bool isFirstValidHitInLayerAux = false;
-
-      // in some layers, up to 4 hits exist -> all of them need to be checked
-      uint32_t thisLayer;
-      uint32_t prevLayer;
-      uint32_t prevPrevLayer;
-      uint32_t prevPrevPrevLayer;
-      uint32_t prevPrevPrevPrevLayer;
-      uint32_t thisSubStruct;
-      uint32_t prevSubStruct;
-      uint32_t prevPrevSubStruct;
-      uint32_t prevPrevPrevSubStruct;
-      uint32_t prevPrevPrevPrevSubStruct;
-
-      uint32_t pHit = hp.getHitPattern(reco::HitPattern::TRACK_HITS, int(isNotValidVec.size()) - 1);
-      uint32_t nHit = hp.getHitPattern(reco::HitPattern::TRACK_HITS, int(isNotValidVec.size()) - 2);
-      uint32_t mHit = hp.getHitPattern(reco::HitPattern::TRACK_HITS, int(isNotValidVec.size()) - 3);
-      uint32_t lHit = hp.getHitPattern(reco::HitPattern::TRACK_HITS, int(isNotValidVec.size()) - 4);
-      uint32_t kHit = hp.getHitPattern(reco::HitPattern::TRACK_HITS, int(isNotValidVec.size()) - 5);
-
-      thisLayer = hp.getLayer(pHit);
-      prevLayer = hp.getLayer(nHit);
-      prevPrevLayer = hp.getLayer(mHit);
-      prevPrevPrevLayer = hp.getLayer(lHit);
-      prevPrevPrevPrevLayer = hp.getLayer(kHit);
-      thisSubStruct = hp.getSubStructure(pHit);
-      prevSubStruct = hp.getSubStructure(nHit);
-      prevPrevSubStruct = hp.getSubStructure(mHit);
-      prevPrevPrevSubStruct = hp.getSubStructure(lHit);
-      prevPrevPrevPrevSubStruct = hp.getSubStructure(kHit);
 
       // If hit is not valid, it will not count as a tracker layer with measurement -> don't increase sequLayers
       if (isNotValidVec[int(isNotValidVec.size()) - 1])
-      {
-        // if(int(isNotValidVec.size()) > 1) {std::cout << "isFirstValidHitInLayerAux = " << isFirstValidHitInLayerAux << " -- thisSubStruct = " << thisSubStruct << " -- thisLayer = " << thisLayer << " -- isNotValidVec[int(isNotValidVec.size()) - 2] = " << isNotValidVec[int(isNotValidVec.size()) - 2] << " -- isNotValidVec[int(isNotValidVec.size()) - 1] = " << isNotValidVec[int(isNotValidVec.size()) - 1];} // For debugging
-        // else{std::cout << "isFirstValidHitInLayerAux = " << isFirstValidHitInLayerAux << " -- thisSubStruct = " << thisSubStruct << " -- thisLayer = " << thisLayer << " -- isNotValidVec[int(isNotValidVec.size()) - 1] = " << isNotValidVec[int(isNotValidVec.size()) - 1];} // For debugging
-        return isFirstValidHitInLayerAux;
-      }
+        return false;
 
-      // TODO: make the procedure work with a loop
-      /*for(int j = 0; j < int(isNotValidVec.size()); ++j){
+      // If very first valid layer -> increase sequLayers
+      if (int(isNotValidVec.size()) == 1)
+        return true;
 
-        uint32_t prevLayer;
-        uint32_t prevPrevLayer;
-        uint32_t prevSubStruct;
-        uint32_t prevPrevSubStruct;
-        uint32_t nHit = hp.getHitPattern(reco::HitPattern::TRACK_HITS, int(isNotValidVec.size()) - (j + 2));
-        uint32_t mHit = hp.getHitPattern(reco::HitPattern::TRACK_HITS, int(isNotValidVec.size()) - (j + 3));
-        prevLayer =  hp.getLayer(nHit);
-        prevPrevLayer =  hp.getLayer(mHit);
-        prevSubStruct =  hp.getSubStructure(nHit);
-        prevPrevSubStruct =  hp.getSubStructure(mHit);
-        bool isTheSame = false;
+      uint32_t thisLayer;
+      uint32_t thisSubStruct;
+      uint32_t pHit = hp.getHitPattern(reco::HitPattern::TRACK_HITS, int(isNotValidVec.size()) - 1);
+      thisLayer = hp.getLayer(pHit);
+      thisSubStruct = hp.getSubStructure(pHit);
 
-        if((int(isNotValidVec.size()) > 2)&&(prevPrevLayer==prevLayer)&&(prevPrevSubStruct==prevSubStruct)) isTheSame = true;
-
-        if (int(isNotValidVec.size()) > (j + 1) && isNotValidVec[int(isNotValidVec.size()) - (j + 2)] == false) {
-          if(!((thisLayer==prevLayer)&&(thisSubStruct==prevSubStruct))) {isFirstValidHitInLayerAux = true; break;}
-        }
-        if (isTheSame) break;
-      }*/
-
-      // These ifs compare whether the previous hits substructure and layer with current hit. If hits in the same layer
+      // This loop compare the previous hits substructure and layer with current hit. If hits in the same layer
       // and substructure and previous hit is valid, skip layer. If previous hit is not valid, even if same layer
-      // and substructure, increase sequLayers. Repeat process for every previous hit until 3 hits before current
-      // As stated above a loop could be used here instead of manually assining a given number of previous hits to
-      // check; it could stop as soon as previous hit being checked is not in same layer and substructure as next hit
-      if (int(isNotValidVec.size()) > 1 && isNotValidVec[int(isNotValidVec.size()) - 2] == false)
+      // and substructure, check the previous previous hit. Repeat process for every previous hit until reaching
+      // a valid hit or different layer/substructure
+      for (int j = 0; j < int(isNotValidVec.size()); ++j)
       {
-        if (!((thisLayer == prevLayer) && (thisSubStruct == prevSubStruct)))
-          isFirstValidHitInLayerAux = true;
-      }
-      else
-      {
-        if (int(isNotValidVec.size()) > 2 && isNotValidVec[int(isNotValidVec.size()) - 3] == false)
+
+        if (int(isNotValidVec.size()) > (j + 1))
         {
-          if (!((thisLayer == prevPrevLayer) && (thisSubStruct == prevPrevSubStruct)))
-            isFirstValidHitInLayerAux = true;
-        }
-        else
-        {
-          if (int(isNotValidVec.size()) > 3 && isNotValidVec[int(isNotValidVec.size()) - 4] == false)
+          uint32_t prevLayer;
+          uint32_t prevSubStruct;
+          uint32_t nHit = hp.getHitPattern(reco::HitPattern::TRACK_HITS, int(isNotValidVec.size()) - (j + 2));
+          prevLayer = hp.getLayer(nHit);
+          prevSubStruct = hp.getSubStructure(nHit);
+          if ((thisLayer == prevLayer) && (thisSubStruct == prevSubStruct))
           {
-            if (!((thisLayer == prevPrevPrevLayer) && (thisSubStruct == prevPrevPrevSubStruct)))
-              isFirstValidHitInLayerAux = true;
+            if (isNotValidVec[int(isNotValidVec.size()) - (j + 2)] == false)
+            {
+              return false;
+            }
           }
           else
           {
-            if (int(isNotValidVec.size()) > 4 && isNotValidVec[int(isNotValidVec.size()) - 5] == false)
-            {
-              if (!((thisLayer == prevPrevPrevPrevLayer) && (thisSubStruct == prevPrevPrevPrevSubStruct)))
-                isFirstValidHitInLayerAux = true;
-            }
-            else
-            {
-              isFirstValidHitInLayerAux = true;
-            }
+            return true;
           }
+        }
+        else
+        {
+          return true;
         }
       }
 
-      if (int(isNotValidVec.size()) > 1)
-      {
-        // std::cout << "isFirstValidHitInLayerAux = " << isFirstValidHitInLayerAux << " -- thisSubStruct = " << thisSubStruct << " -- thisLayer = " << thisLayer << " -- isNotValidVec[int(isNotValidVec.size()) - 2] = " << isNotValidVec[int(isNotValidVec.size()) - 2] << " -- isNotValidVec[int(isNotValidVec.size()) - 1] = " << isNotValidVec[int(isNotValidVec.size()) - 1] << std::endl;
-      } // For debugging
-      else
-      {
-        // std::cout << "isFirstValidHitInLayerAux = " << isFirstValidHitInLayerAux << " -- thisSubStruct = " << thisSubStruct << " -- thisLayer = " << thisLayer << " -- isNotValidVec[int(isNotValidVec.size()) - 1] = " << isNotValidVec[int(isNotValidVec.size()) - 1] << std::endl;
-      } // For debugging
-
-      return isFirstValidHitInLayerAux;
+      return false;
     }
 
     unsigned int TrackerTrackHitFilterMod::getSequLayer(const reco::Track &tk, unsigned int prevSequLayers, std::vector<bool> isNotValidVec)
     {
-
       unsigned int sequLayers = 0;
-
-      if (isFirstValidHitInLayer(tk, isNotValidVec))
-      {
-        sequLayers = prevSequLayers + 1;
-      }
-      else
-      {
-        sequLayers = prevSequLayers;
-      }
+      sequLayers = isFirstValidHitInLayer(tk, isNotValidVec) ? prevSequLayers + 1 : prevSequLayers;
 
       return sequLayers;
     }
@@ -798,9 +726,7 @@ namespace reco
         {
 
           if (breakHitLoop)
-          {
             break;
-          }
 
           if (!(*hitsBegin)->isValid())
           {
@@ -810,17 +736,13 @@ namespace reco
           {
             isNotValidVec.push_back(false);
           }
-
           sequLayers = getSequLayer(tk, sequLayers, isNotValidVec);
           if (sequLayers > layersRemaining_)
             break;
         }
 
         ownHits.push_back(*hitsBegin);
-        // std::cout << "ownHits.size(): " << ownHits.size() << std::endl;
       }
-      // std::cout << "==============================" << std::endl;
-      // std::cout << "ownHits.size(): " << ownHits.size() << std::endl;
 
       TrackCandidate cand(ownHits, seed, state, tk.seedRef());
 

@@ -160,7 +160,7 @@ void TrackingResolutionAlignment::analyze(edm::Event const &iEvent, edm::EventSe
                 int track_trackerLayersWithMeasurement = track_rereco->hitPattern().trackerLayersWithMeasurement();
                 int track_pixelLayersWithMeasurement = track_rereco->hitPattern().pixelLayersWithMeasurement();
 
-                if (track_trackerLayersWithMeasurement < 8 * hitsRemain_int)
+                if (track_trackerLayersWithMeasurement != hitsRemain_int)
                 {
                   // std::cout << iEvent.id() << std::endl;
                   // std::cout << "Tracker layers of short track: " << track_trackerLayersWithMeasurement << std::endl;
